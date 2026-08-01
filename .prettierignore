@@ -1,0 +1,9 @@
+node_modules
+.next
+dist
+test-dist
+.turbo
+coverage
+pnpm-lock.yaml
+packages/domain/generated
+*.md

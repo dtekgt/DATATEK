@@ -1,0 +1,9 @@
+{
+  "extends": "@datatek/config/tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "outDir": "dist",
+    "types": ["react", "node"]
+  },
+  "include": ["src", "test-setup"]
+}

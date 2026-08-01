@@ -1,0 +1,20 @@
+{
+  "extends": "@datatek/config/tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node10",
+    "target": "ES2022",
+    "outDir": "test-dist",
+    "noEmit": false,
+    "declaration": false,
+    "isolatedModules": false,
+    "rewriteRelativeImportExtensions": true,
+    "types": ["node"]
+  },
+  "include": [
+    "src/lib/env.ts",
+    "src/lib/env.test.ts",
+    "src/lib/fixture-session.ts",
+    "src/lib/fixture-session.test.ts"
+  ]
+}

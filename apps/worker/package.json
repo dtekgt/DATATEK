@@ -1,0 +1,15 @@
+{
+  "name": "@datatek/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node src/index.mjs",
+    "build": "node -e \"console.log('worker: nothing to build in R0-B')\"",
+    "lint": "eslint .",
+    "typecheck": "echo \"worker: no TypeScript sources in R0-B\" && exit 0",
+    "test": "echo \"worker: no tests in R0-B\" && exit 0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

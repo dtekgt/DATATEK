@@ -1,0 +1,13 @@
+{
+  "name": "@datatek/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "files": [
+    "tsconfig.base.json",
+    "eslint.base.mjs"
+  ],
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,1 @@
+pgTAP contract tests ship alongside each business migration wave, starting R0-C. Empty by design in R0-B.

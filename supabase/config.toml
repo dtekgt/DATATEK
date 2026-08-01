@@ -1,0 +1,25 @@
+# Datatek — configuración local de Supabase CLI (R0-B).
+#
+# No apunta a ningún proyecto remoto ni contiene credenciales. `pnpm db:start`
+# queda diferido a una sesión futura con Docker Desktop (ver
+# scripts/db-stub.mjs y docs/runbooks/database-reset.md).
+
+project_id = "datatek-r0b-local"
+
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = false # R0-C conecta auth real; R0-B no lo usa.
+
+[storage]
+enabled = false # sin upload real de evidencia en R0-B.

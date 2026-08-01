@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node10",
+    "target": "ES2022",
+    "outDir": "test-dist",
+    "noEmit": false,
+    "declaration": false,
+    "isolatedModules": false,
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["src", "generated"]
+}

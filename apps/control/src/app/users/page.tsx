@@ -1,0 +1,29 @@
+import { AccessBoundary, Badge, DataTable } from "@datatek/ui";
+import { FIXTURE_PLATFORM_ACTOR_OPTIONS } from "../../lib/fixture-session";
+import { getControlSession } from "../../lib/fixture-session";
+
+// R0-C: platform roles/users, entirely separate from any organization
+// membership (sección 2.4, sección 10 dominio "platform roles separados").
+export default async function UsersPage() {
+  const session = await getControlSession("platform.control.enter");
+
+  return (
+    <AccessBoundary state={session.accessState}>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-semibold">Usuarios de plataforma</h1>
+          <Badge tone="neutral">independiente de membership de organización</Badge>
+        </div>
+        <DataTable
+          caption="Usuarios de plataforma"
+          rowKey={(row) => row.id}
+          rows={FIXTURE_PLATFORM_ACTOR_OPTIONS}
+          columns={[
+            { key: "label", header: "Actor", render: (row) => row.label },
+            { key: "id", header: "ID", render: (row) => row.id },
+          ]}
+        />
+      </div>
+    </AccessBoundary>
+  );
+}

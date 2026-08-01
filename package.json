@@ -1,0 +1,43 @@
+{
+  "name": "datatek-r0b",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=24.18.0"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --if-present run dev",
+    "build": "pnpm -r --if-present run build",
+    "lint": "pnpm -r --if-present run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "test": "pnpm -r --if-present run test",
+    "test:db": "node ./scripts/test-db-contract.mjs",
+    "test:e2e": "playwright test -c tests/e2e/playwright.config.ts",
+    "e2e:install": "playwright install --with-deps chromium",
+    "spec:generate": "node ./packages/domain/scripts/generate-spec.mjs",
+    "spec:check": "node ./packages/domain/scripts/generate-spec.mjs --check",
+    "db:start": "node ./scripts/db-stub.mjs start",
+    "db:stop": "node ./scripts/db-stub.mjs stop",
+    "db:reset": "node ./scripts/db-stub.mjs reset",
+    "db:types": "node ./scripts/db-stub.mjs types",
+    "turbo:build": "turbo run build",
+    "turbo:dev": "turbo run dev --parallel",
+    "turbo:lint": "turbo run lint",
+    "turbo:typecheck": "turbo run typecheck",
+    "turbo:test": "turbo run test"
+  },
+  "devDependencies": {
+    "turbo": "2.10.8",
+    "prettier": "3.9.6",
+    "typescript": "5.9.3",
+    "eslint": "10.8.0",
+    "@eslint/js": "10.0.1",
+    "typescript-eslint": "8.65.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.8.0",
+    "@playwright/test": "1.62.1"
+  }
+}

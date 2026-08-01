@@ -1,0 +1,15 @@
+node_modules/
+.next/
+dist/
+build/
+test-dist/
+.turbo/
+coverage/
+.env.local
+.env.*.local
+*.tsbuildinfo
+playwright-report/
+test-results/
+.DS_Store
+Thumbs.db
+packages/domain/generated/*.snapshot.json
