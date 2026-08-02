@@ -89,6 +89,32 @@ brake_conditions:
   - not_inspected
   - not_applicable
 
+# Extraído de DATATEK_R0_A_CONTRACT_PACK.md sección 5.2 (estados de cita) y
+# 5.3 (estados de inspección) — R0-D Fase 2, olas 0060/0070.
+appointment_statuses:
+  - tentative
+  - confirmed
+  - arrived
+  - completed
+  - cancelled
+  - no_show
+
+inspection_statuses:
+  - draft
+  - in_progress
+  - completed
+  - corrected
+  - invalidated
+
+# R0-A sección 8.2 — estados de un evidence_asset a lo largo del ciclo de
+# upload intent -> confirmación -> verificación/rechazo/invalidación.
+evidence_asset_statuses:
+  - pending_upload
+  - uploaded
+  - verified
+  - rejected
+  - invalidated
+
 # Extraído de DATATEK_R0_C_IDENTITY_TENANCY_ISOLATION.md, secciones 4 y 8.
 # Catálogo canónico de permisos. Los permisos R0-D+ se seed-ean ya (sin
 # entidad todavía) para no cambiar IDs/roles después (sección 4).
@@ -113,6 +139,11 @@ organization_permissions:
   - agenda.manage
   - inspection.read
   - inspection.publish
+  # R0-D Fase 2 — ola 0070, contrato de evidencia (R0-A sección 6.2/8).
+  - evidence.read_internal
+  - evidence.read_customer
+  - evidence.upload
+  - evidence.publish_to_customer
   - quote.read
   - quote.manage
   - authorization.request
@@ -159,6 +190,10 @@ organization_role_templates:
     - agenda.manage
     - inspection.read
     - inspection.publish
+    - evidence.read_internal
+    - evidence.read_customer
+    - evidence.upload
+    - evidence.publish_to_customer
     - quote.read
     - quote.manage
     - authorization.request
@@ -181,6 +216,10 @@ organization_role_templates:
     - agenda.read
     - agenda.manage
     - inspection.read
+    - evidence.read_internal
+    - evidence.read_customer
+    - evidence.upload
+    - evidence.publish_to_customer
     - quote.read
     - quote.manage
     - authorization.request
@@ -191,6 +230,8 @@ organization_role_templates:
     - vehicle.read
     - inspection.read
     - inspection.publish
+    - evidence.read_internal
+    - evidence.upload
     - work.read
   mechanic:
     - organization.read

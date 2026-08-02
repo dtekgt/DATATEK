@@ -27,3 +27,16 @@ export * from "./adapters/pro-adapters.ts";
 export * from "./adapters/pass-adapters.ts";
 export * from "./adapters/market-adapters.ts";
 export * from "./adapters/control-adapters.ts";
+
+// The command layer (packages/application/src/commands/*) is DELIBERATELY
+// NOT re-exported here. `quote-commands.ts` and `authorization-commands.ts`
+// both reach `node:crypto` (directly, or via "@datatek/domain/quote-snapshot"
+// — see that file's comment). Every page/component above imports this
+// barrel for read-only ViewModels; because `export *` forces a bundler to
+// resolve every module reachable through it regardless of which names a
+// given importer actually uses, keeping the commands here would drag
+// `node:crypto` into EVERY client bundle that reads so much as one
+// ViewModel — exactly the `apps/control`/`apps/web` webpack failures this
+// split fixes. Server-only code (the dev command engine, its route handler)
+// imports the command layer explicitly from "@datatek/application/commands"
+// instead — see commands.ts at this package's root.

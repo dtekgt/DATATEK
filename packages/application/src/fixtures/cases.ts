@@ -4,6 +4,16 @@ import type { CaseBlocker, OperationalNextAction, StageRailStage } from "../view
 export const DEMO_CASE_ID = "case-demo-brakes";
 export const DEMO_CASE_CODE = "DTEK-2026-0142";
 
+// Fase 4a fix: `"ready"` (where a case lands right after RecordAuthorization
+// accepts total/partial — DATATEK_R0_A sección 5.1) was missing from this
+// list. R0-B/R0-C's fixture callers never demoed a case at that exact
+// status (only `waiting_authorization`/`inspection`), so the gap was silent
+// until `getProCaseExperience` (queries/pro-case-experience.ts, R0-D Fase
+// 4a) became the first REAL caller to reach it: without this entry,
+// `CASE_STAGE_ORDER.indexOf("ready")` was -1, so a case actually at
+// `ready` rendered every stage as `planned` with no `current` stage at
+// all — a real bug this array's only other caller (`buildDemoStageRail`
+// below) never exercised.
 export const CASE_STAGE_ORDER: CaseStatus[] = [
   "new",
   "triage",
@@ -11,6 +21,7 @@ export const CASE_STAGE_ORDER: CaseStatus[] = [
   "received",
   "inspection",
   "waiting_authorization",
+  "ready",
   "in_progress",
   "quality",
   "ready_for_delivery",

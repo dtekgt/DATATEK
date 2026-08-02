@@ -9,10 +9,22 @@ import type {
   Visibility,
 } from "@datatek/domain";
 
-/** Every fixture-backed view model carries this marker so the UI can render a
- * visible "DEMO DATA" badge and refuse to treat the payload as real. */
+/** Every view model in this shape family carries this marker so the UI can
+ * render a visible "DEMO DATA" badge and refuse to treat the payload as
+ * real. `true` for every static fixture adapter (`adapters/*.ts`) — always,
+ * unconditionally, by construction. `false` for every query contract
+ * (`queries/*.ts`, R0-D Fase 4a/4b) reading real `CrmVehicleState` — a case
+ * built through the real command engine is real within this demo's own
+ * scope (sección "Reglas que no puedes romper": "los datos reales del motor
+ * NO llevan ese rotulo"), even though nothing here is persisted to
+ * Postgres yet. Widened from a `true` literal (R0-B/Fase 4a) to `boolean`
+ * in Fase 4b once a real, engine-backed page (`VehicleNowCard` on `/pass`)
+ * exposed the literal-`true` version's actual bug: every query response
+ * satisfied the marker's type by unconditionally setting `demo: true`,
+ * which made a genuinely real vehicle status render the SAME "DEMO DATA"
+ * badge as the static fixture it replaced. */
 export interface DemoMarker {
-  demo: true;
+  demo: boolean;
 }
 
 export interface Fact<T> {

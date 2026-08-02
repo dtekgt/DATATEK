@@ -6,6 +6,12 @@ import {
   getVehiclePassportViewModel,
 } from "@datatek/application";
 import {
+  getPassHome,
+  getVehicleNow,
+  getImmediateDecisions,
+  getNextService,
+} from "@datatek/application/commands";
+import {
   VehicleNowCard,
   ImmediateDecisionStack,
   NextServiceCard,
@@ -14,8 +20,70 @@ import {
   Card,
   LinkButton,
 } from "@datatek/ui";
+import { getCommandsEngine } from "../../../lib/commands-engine";
+import { resolvePassActor } from "../../../lib/pass-actor";
 
-export default function PassHomePage() {
+export default async function PassHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ org?: string; actor?: string }>;
+}) {
+  const sp = await searchParams;
+  const actor = resolvePassActor(sp);
+
+  if (actor) {
+    const state = getCommandsEngine().getState();
+    const ctx = {
+      organizationId: actor.organizationId,
+      audience: "pass" as const,
+      actorId: actor.actorId,
+      now: new Date(),
+    };
+    const home = getPassHome(state, ctx);
+    if (home.vehicles.length > 0) {
+      const vehicleId = home.selectedVehicleId ?? home.vehicles[0]!.id;
+      const now = getVehicleNow(state, ctx, vehicleId);
+      const decisions = getImmediateDecisions(state, ctx, vehicleId);
+      const nextService = getNextService(state, ctx, vehicleId);
+
+      return (
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold">Hola, {home.customerFirstName}</h1>
+            <Badge tone="success">Motor de comandos</Badge>
+          </div>
+
+          <section aria-label="Estado actual">
+            <VehicleNowCard vm={now} />
+          </section>
+
+          <section aria-label="Decisiones inmediatas">
+            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-[var(--color-muted-400)]">
+              Decisiones que necesitan tu atención
+            </h2>
+            <ImmediateDecisionStack vm={decisions} />
+          </section>
+
+          <section aria-label="Próximo servicio">
+            {nextService ? (
+              <NextServiceCard vm={nextService} />
+            ) : (
+              <p className="text-sm text-[var(--color-muted-400)]">
+                Todavía no hay una recomendación de próximo servicio para este vehículo.
+              </p>
+            )}
+          </section>
+
+          <section aria-label="Beneficios">
+            <LinkButton href="/pass/benefits" variant="secondary">
+              Ver beneficios
+            </LinkButton>
+          </section>
+        </div>
+      );
+    }
+  }
+
   const home = getPassHomeViewModel();
   const vehicleId = home.selectedVehicleId ?? home.vehicles[0]?.id ?? "";
   const now = getVehicleNowViewModel(vehicleId);

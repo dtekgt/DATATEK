@@ -63,10 +63,13 @@ insert into organization_settings (organization_id)
 values ('10000000-0000-0000-0000-000000000001'), ('10000000-0000-0000-0000-000000000002')
 on conflict (organization_id) do nothing;
 
+-- next_value=2: cada organización ya "consumió" el folio 1 abajo (sección
+-- CRM + vehículo / intake + caso) — el siguiente RegisterCase real
+-- continuará en 2, nunca repite el folio 1 sembrado aquí.
 insert into organization_counters (organization_id, counter_key, next_value)
 values
-  ('10000000-0000-0000-0000-000000000001', 'case_folio', 1),
-  ('10000000-0000-0000-0000-000000000002', 'case_folio', 1)
+  ('10000000-0000-0000-0000-000000000001', 'case_folio', 2),
+  ('10000000-0000-0000-0000-000000000002', 'case_folio', 2)
 on conflict (organization_id, counter_key) do nothing;
 
 insert into organization_branches (id, organization_id, slug, name, is_mobile, status)
@@ -257,4 +260,181 @@ insert into support_access_sessions (
   '2026-08-01 20:00:00+00',
   '00000000-0000-0000-0000-0000000000c2'
 )
+on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- CRM + vehículo (R0-D Fase 1, olas 0020/0030) — un cliente y un vehículo
+-- por organización, con un claim provisional y un evento de odómetro cada
+-- uno, exactamente lo que supabase/tests/0020_crm.sql y
+-- supabase/tests/0030_vehicles_access.sql necesitan para probar RLS/
+-- no-enumeración una vez esta sandbox tenga Docker (ver cabeceras de
+-- 0020_crm.sql / 0030_vehicles_access.sql — no ejecutado en esta sesión).
+-- ---------------------------------------------------------------------------
+
+insert into customers (id, organization_id, display_name, customer_type, status, source, created_by) values
+  ('60000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'Cliente Demo DTEK', 'person', 'active', 'whatsapp_manual', '00000000-0000-0000-0000-0000000000a2'),
+  ('60000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', 'Cliente Demo Taller Demo', 'person', 'active', 'walk_in', '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into customer_auth_links (id, organization_id, customer_id, user_id, status, verification_method, verified_at, created_by) values
+  ('60000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000a6', 'verified', 'manual_staff', now(), '00000000-0000-0000-0000-0000000000a2'),
+  ('60000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000b2', 'verified', 'manual_staff', now(), '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into customer_contacts (id, organization_id, customer_id, channel, normalized_value, raw_value, verified, verified_at, is_primary, created_by) values
+  ('60000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000001', 'whatsapp', '+50255551234', '+502 5555-1234', true, now(), true, '00000000-0000-0000-0000-0000000000a2'),
+  ('60000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000002', 'whatsapp', '+50255556789', '+502 5555-6789', true, now(), true, '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into vehicles (id, primary_vin, primary_plate, make, model, year, color, created_by) values
+  ('70000000-0000-0000-0000-000000000001', '1HGCM82633A004352', 'P123ABC', 'Toyota', 'Corolla', 2018, 'Gris', '00000000-0000-0000-0000-0000000000a2'),
+  ('70000000-0000-0000-0000-000000000002', 'KNADH4A31F6123456', 'P321JKL', 'Kia', 'Rio', 2015, 'Rojo', '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into vehicle_identifiers (id, vehicle_id, identifier_type, normalized_value, raw_value, recorded_by_organization_id, created_by) values
+  ('70000000-0000-0000-0000-000000000003', '70000000-0000-0000-0000-000000000001', 'vin', '1HGCM82633A004352', '1HGCM82633A004352', '10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000a2'),
+  ('70000000-0000-0000-0000-000000000004', '70000000-0000-0000-0000-000000000001', 'plate', 'P123ABC', 'P-123ABC', '10000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000a2'),
+  ('70000000-0000-0000-0000-000000000005', '70000000-0000-0000-0000-000000000002', 'vin', 'KNADH4A31F6123456', 'KNADH4A31F6123456', '10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000b1'),
+  ('70000000-0000-0000-0000-000000000006', '70000000-0000-0000-0000-000000000002', 'plate', 'P321JKL', 'P-321JKL', '10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into vehicle_access_grants (id, organization_id, vehicle_id, granted_to_customer_id, scope, source, created_by) values
+  ('70000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000001', 'read_own_case', 'registration', '00000000-0000-0000-0000-0000000000a2'),
+  ('70000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000002', 'read_own_case', 'registration', '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into vehicle_ownership_claims (id, organization_id, customer_id, vehicle_id, claim_kind, status, created_by) values
+  ('70000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', 'self_reported', 'provisional', '00000000-0000-0000-0000-0000000000a2'),
+  ('70000000-0000-0000-0000-000000000010', '10000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000002', 'self_reported', 'provisional', '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into vehicle_odometer_events (id, vehicle_id, organization_id, recorded_at, value_km, raw_value, raw_unit, provenance, actor_id, status) values
+  ('70000000-0000-0000-0000-000000000011', '70000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', '2026-07-20 15:00:00+00', 84210, 84210, 'km', 'observed', '00000000-0000-0000-0000-0000000000a2', 'accepted'),
+  ('70000000-0000-0000-0000-000000000012', '70000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', '2025-11-02 10:00:00+00', 112500, 112500, 'km', 'observed', '00000000-0000-0000-0000-0000000000b1', 'accepted')
+on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Intake + caso (R0-D Fase 2, ola 0050) — un thread/caso por organización,
+-- lo mínimo que supabase/tests/0050_intake_cases.sql necesita.
+-- ---------------------------------------------------------------------------
+
+insert into intake_threads (id, organization_id, customer_id, channel, status, created_by) values
+  ('80000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', '60000000-0000-0000-0000-000000000001', 'whatsapp_manual', 'converted', '00000000-0000-0000-0000-0000000000a2'),
+  ('80000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000002', 'whatsapp_manual', 'open', '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into intake_entries (id, organization_id, thread_id, direction, original_text, reported_at, recorded_by) values
+  ('80000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000001', 'inbound', 'Hola, mi carro chilla al frenar desde ayer.', '2026-07-30 09:00:00+00', '00000000-0000-0000-0000-0000000000a2'),
+  ('80000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000002', '80000000-0000-0000-0000-000000000002', 'inbound', 'Buenas, quisiera revisión de frenos.', '2026-07-30 09:00:00+00', '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into cases (id, organization_id, branch_id, folio_number, folio_code, customer_id, vehicle_id, status, source_intake_thread_id, created_by) values
+  ('80000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 1, '2026-00001', '60000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', 'inspection', '80000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000a2'),
+  ('80000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000003', 1, '2026-00001', '60000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000002', 'new', '80000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000b1')
+on conflict (id) do nothing;
+
+insert into case_participants (id, organization_id, case_id, customer_id, participant_kind, added_by) values
+  ('80000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', '60000000-0000-0000-0000-000000000001', 'customer', '00000000-0000-0000-0000-0000000000a2')
+on conflict (id) do nothing;
+
+insert into case_assignments (id, organization_id, case_id, role, user_id, assigned_by) values
+  ('80000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', 'advisor', '00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-0000000000a1'),
+  ('80000000-0000-0000-0000-000000000009', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', 'inspector', '00000000-0000-0000-0000-0000000000a3', '00000000-0000-0000-0000-0000000000a1')
+on conflict (id) do nothing;
+
+insert into service_requests (id, organization_id, case_id, source_intake_entry_id, summary, created_by) values
+  ('80000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-000000000003', 'Chillido al frenar reportado por el cliente.', '00000000-0000-0000-0000-0000000000a2')
+on conflict (id) do nothing;
+
+insert into reported_symptoms (id, organization_id, case_id, service_request_id, source_intake_entry_id, symptom_code, description, created_by) values
+  ('80000000-0000-0000-0000-00000000000b', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', '80000000-0000-0000-0000-00000000000a', '80000000-0000-0000-0000-000000000003', 'brake_noise', 'Chillido metálico al frenar, reportado por el cliente.', '00000000-0000-0000-0000-0000000000a2')
+on conflict (id) do nothing;
+
+-- Una nota internal y una customer — supabase/tests/0050_intake_cases.sql
+-- prueba que la internal nunca queda expuesta a un cliente vinculado.
+insert into case_notes (id, organization_id, case_id, visibility, body, author_id) values
+  ('80000000-0000-0000-0000-00000000000c', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', 'internal', 'Cliente algo impaciente, dar seguimiento cercano.', '00000000-0000-0000-0000-0000000000a2'),
+  ('80000000-0000-0000-0000-00000000000d', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', 'customer', 'Recibimos tu carro y ya iniciamos la inspección de frenos.', '00000000-0000-0000-0000-0000000000a2')
+on conflict (id) do nothing;
+
+insert into case_status_events (id, organization_id, case_id, from_status, to_status, actor_id) values
+  ('80000000-0000-0000-0000-00000000000e', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', null, 'new', '00000000-0000-0000-0000-0000000000a2'),
+  ('80000000-0000-0000-0000-00000000000f', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', 'new', 'triage', '00000000-0000-0000-0000-0000000000a2')
+on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Agenda (R0-D Fase 2, ola 0060) — un recurso, una cita confirmada con su
+-- reserva activa por organización, lo mínimo que
+-- supabase/tests/0060_scheduling.sql necesita.
+-- ---------------------------------------------------------------------------
+
+insert into resources (id, organization_id, branch_id, resource_type, label) values
+  ('81000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'bay', 'Bahía 1'),
+  ('81000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000003', 'bay', 'Bahía Demo')
+on conflict (id) do nothing;
+
+insert into resource_capabilities (id, organization_id, resource_id, capability_key) values
+  ('81000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000001', 'brake_service')
+on conflict (id) do nothing;
+
+insert into appointments (id, organization_id, branch_id, case_id, status, starts_at, ends_at, purpose, created_by, arrived_at) values
+  ('81000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', 'arrived', '2026-07-31 14:00:00+00', '2026-07-31 15:00:00+00', 'Inspección de frenos', '00000000-0000-0000-0000-0000000000a2', '2026-07-31 14:05:00+00'),
+  ('81000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000003', '80000000-0000-0000-0000-000000000006', 'tentative', '2026-08-01 10:00:00+00', '2026-08-01 11:00:00+00', 'Revisión de frenos', '00000000-0000-0000-0000-0000000000b1', null)
+on conflict (id) do nothing;
+
+insert into appointment_resources (id, organization_id, appointment_id, resource_id) values
+  ('81000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000004', '81000000-0000-0000-0000-000000000001')
+on conflict (id) do nothing;
+
+insert into resource_reservations (id, organization_id, resource_id, appointment_id, status, starts_at, ends_at, created_by) values
+  ('81000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000004', 'active', '2026-07-31 14:00:00+00', '2026-07-31 15:00:00+00', '00000000-0000-0000-0000-0000000000a2')
+on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Inspección + evidencia (R0-D Fase 2, ola 0070) — una inspección en curso
+-- sobre el template de frenos sembrado por la propia migración 0070, con
+-- un resultado, un finding, una recomendación y evidencia internal +
+-- customer, lo mínimo que supabase/tests/0070_inspection_evidence.sql
+-- necesita.
+-- ---------------------------------------------------------------------------
+
+insert into inspections (id, organization_id, case_id, vehicle_id, template_version_id, status, started_by, odometer_km_at_inspection)
+select
+  '82000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005',
+  '70000000-0000-0000-0000-000000000001', v.id, 'in_progress', '00000000-0000-0000-0000-0000000000a3', 84210
+from inspection_template_versions v
+join inspection_templates t on t.id = v.template_id
+where t.key = 'brakes' and v.version_number = 1
+on conflict (id) do nothing;
+
+insert into inspection_results (id, organization_id, inspection_id, template_item_id, axle, side, condition, provenance, actor_id, measured_at)
+select '82000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000001', i.id, 'front', 'left', 'attention', 'measured', '00000000-0000-0000-0000-0000000000a3', '2026-07-31 14:30:00+00'
+from inspection_template_items i where i.item_key = 'pad_thickness_inner'
+on conflict (id) do nothing;
+
+insert into measurements (id, organization_id, inspection_result_id, value, unit, provenance, actor_id, measured_at) values
+  ('82000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000002', 3.2, 'mm', 'measured', '00000000-0000-0000-0000-0000000000a3', '2026-07-31 14:30:00+00')
+on conflict (id) do nothing;
+
+insert into findings (id, organization_id, case_id, inspection_id, inspection_result_id, description, urgency, visibility, actor_id) values
+  ('82000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', '82000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000002', 'Pastilla delantera izquierda por debajo del mínimo recomendado.', 'attention', 'customer', '00000000-0000-0000-0000-0000000000a3')
+on conflict (id) do nothing;
+
+insert into maintenance_recommendations (id, organization_id, case_id, vehicle_id, finding_id, trigger_kind, due_odometer_km, basis_kind, status, actor_id) values
+  ('82000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', '70000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000004', 'odometer', 90000, 'inspection', 'due_soon', '00000000-0000-0000-0000-0000000000a3')
+on conflict (id) do nothing;
+
+insert into upload_intents (id, organization_id, case_id, actor_id, purpose, declared_mime, visibility_requested, bucket, object_path, status, expires_at) values
+  ('82000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-0000000000a3', 'inspection_evidence', 'image/jpeg', 'customer', 'evidence-dtek', 'org-10000000/case-80000000/6f1c9e2e-photo.jpg', 'confirmed', now() + interval '1 hour')
+on conflict (id) do nothing;
+
+-- visibility_max=internal a propósito: demuestra que un link posterior con
+-- visibility=customer NO puede ampliarlo (sección 8.3) — ver
+-- supabase/tests/0070_inspection_evidence.sql.
+insert into evidence_assets (id, organization_id, upload_intent_id, uploader_id, bucket, path, mime_declared, mime_detected, bytes, hash, uploaded_at, provenance, visibility_max, status) values
+  ('82000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-0000000000a3', 'evidence-dtek', 'org-10000000/case-80000000/6f1c9e2e-photo.jpg', 'image/jpeg', 'image/jpeg', 245760, 'a3f5c1d9e2b7...sha256demo', now(), 'observed', 'internal', 'verified')
+on conflict (id) do nothing;
+
+insert into evidence_links (id, organization_id, asset_id, entity_type, entity_id, visibility, actor_id) values
+  ('82000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000007', 'finding', '82000000-0000-0000-0000-000000000004', 'customer', '00000000-0000-0000-0000-0000000000a3')
 on conflict (id) do nothing;

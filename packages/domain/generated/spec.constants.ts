@@ -40,7 +40,7 @@ export type MaintenanceStatus = (typeof MAINTENANCE_STATUSES)[number];
 export const BRAKE_CONDITIONS = ["pass","attention","fail","not_inspected","not_applicable"] as const;
 export type BrakeCondition = (typeof BRAKE_CONDITIONS)[number];
 
-export const ORGANIZATION_PERMISSIONS = ["organization.read","organization.manage","branch.manage","membership.read","membership.manage","role.assign","catalog.read","catalog.manage","audit.read_organization","crm.read","crm.manage","vehicle.read","vehicle.manage","intake.read","intake.manage","agenda.read","agenda.manage","inspection.read","inspection.publish","quote.read","quote.manage","authorization.request","authorization.decide","work.read","work.manage","quality.manage","finance.read","finance.manage"] as const;
+export const ORGANIZATION_PERMISSIONS = ["organization.read","organization.manage","branch.manage","membership.read","membership.manage","role.assign","catalog.read","catalog.manage","audit.read_organization","crm.read","crm.manage","vehicle.read","vehicle.manage","intake.read","intake.manage","agenda.read","agenda.manage","inspection.read","inspection.publish","evidence.read_internal","evidence.read_customer","evidence.upload","evidence.publish_to_customer","quote.read","quote.manage","authorization.request","authorization.decide","work.read","work.manage","quality.manage","finance.read","finance.manage"] as const;
 export type OrganizationPermission = (typeof ORGANIZATION_PERMISSIONS)[number];
 
 export const PLATFORM_PERMISSIONS = ["platform.control.enter","platform.organization.manage","platform.catalog.manage","platform.feature.manage","platform.support.manage","platform.security.read","platform.audit.read","platform.access.request","platform.access.approve","platform.access.use"] as const;
@@ -67,6 +67,10 @@ export const ORGANIZATION_ROLE_TEMPLATES: Record<string, readonly OrganizationPe
     "agenda.manage",
     "inspection.read",
     "inspection.publish",
+    "evidence.read_internal",
+    "evidence.read_customer",
+    "evidence.upload",
+    "evidence.publish_to_customer",
     "quote.read",
     "quote.manage",
     "authorization.request",
@@ -90,6 +94,10 @@ export const ORGANIZATION_ROLE_TEMPLATES: Record<string, readonly OrganizationPe
     "agenda.read",
     "agenda.manage",
     "inspection.read",
+    "evidence.read_internal",
+    "evidence.read_customer",
+    "evidence.upload",
+    "evidence.publish_to_customer",
     "quote.read",
     "quote.manage",
     "authorization.request",
@@ -101,6 +109,8 @@ export const ORGANIZATION_ROLE_TEMPLATES: Record<string, readonly OrganizationPe
     "vehicle.read",
     "inspection.read",
     "inspection.publish",
+    "evidence.read_internal",
+    "evidence.upload",
     "work.read"
   ],
   "mechanic": [
