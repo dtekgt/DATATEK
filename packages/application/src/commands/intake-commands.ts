@@ -16,9 +16,11 @@ import {
 import {
   appendAuditEvent,
   appendIdempotencyRecord,
+  checkIdempotencyKeyConflict,
   consumeOrganizationCounter,
   cryptoRandomId,
   findIdempotentReplay,
+  hashCommandInput,
   type CommandOutcome,
   type CrmVehicleState,
   type IntakeThreadRow,
@@ -302,6 +304,18 @@ export function createCaseFromIntake(
   ctx: CommandContext,
   input: CreateCaseFromIntakeInput,
 ): CommandOutcome<CreateCaseFromIntakeOutput> {
+  // DATATEK_R0_E hardening sección 7: misma key + input distinto falla en
+  // vez de reemplazar en silencio el resultado ya guardado — ver el
+  // comentario en `checkIdempotencyKeyConflict` (state.ts).
+  const inputHash = hashCommandInput(input);
+  const keyConflict = checkIdempotencyKeyConflict(
+    state,
+    ctx,
+    COMMAND_CREATE_CASE_FROM_INTAKE,
+    inputHash,
+  );
+  if (keyConflict) return { ok: false, error: keyConflict };
+
   const replay = findIdempotentReplay<CreateCaseFromIntakeOutput>(
     state,
     ctx,
@@ -422,7 +436,7 @@ export function createCaseFromIntake(
     ),
     idempotencyRecords: [
       ...stateWithCounter.idempotencyRecords,
-      appendIdempotencyRecord(ctx, COMMAND_CREATE_CASE_FROM_INTAKE, output),
+      appendIdempotencyRecord(ctx, COMMAND_CREATE_CASE_FROM_INTAKE, output, inputHash),
     ],
     auditLog: [...stateWithCounter.auditLog, auditEvent],
   };

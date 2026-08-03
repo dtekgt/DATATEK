@@ -165,7 +165,20 @@ importers:
         specifier: 4.1.10
         version: 4.1.10(@types/node@26.1.2)(jsdom@30.0.1)(vite@8.2.0(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
 
-  apps/worker: {}
+  apps/worker:
+    devDependencies:
+      '@datatek/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@types/node':
+        specifier: 26.1.2
+        version: 26.1.2
+      expect:
+        specifier: 30.4.1
+        version: 30.4.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
 
   packages/application:
     dependencies:

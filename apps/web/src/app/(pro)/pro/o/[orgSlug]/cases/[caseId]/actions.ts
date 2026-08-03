@@ -16,9 +16,38 @@
 // persisted, never put in a URL/log — see `PrepareAuthorizationRequestOutput
 // .plainToken`'s own comment) so a human can copy it into `/a/[token]`.
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getWebSession } from "../../../../../../../lib/fixture-session";
 import { buildStaffCommandContext } from "../../../../../../../lib/command-context";
 import { getCommandsEngine } from "../../../../../../../lib/commands-engine";
+
+// DATATEK_R0_E sección 9: "Zod en límites", "payload limits", "Server
+// Actions revalidan como endpoints públicos". Antes de esta fase la
+// validación era `if (!orgSlug || !caseId || ...)` — solo presencia, sin
+// límite de tamaño ni de forma.
+//
+// Lo que NO cambia (y ya era correcto): la identidad y el permiso vienen
+// de `getWebSession(orgSlug, "authorization.request")`, nunca del
+// formulario, y `prepareAuthorizationRequest` vuelve a resolver
+// `quoteVersionId`/`audienceCustomerId` dentro de la organización del
+// contexto. Es decir, un `orgSlug` que el emisor no controla no le sirve
+// de nada: la sesión decide. La validación de abajo cierra el vector
+// restante, que es de tamaño/forma, no de autorización.
+const MAX_ID_LENGTH = 128;
+const MAX_SLUG_LENGTH = 128;
+
+const prepareRequestSchema = z.object({
+  // Un slug es `[a-z0-9-]` por construcción en las fixtures; restringirlo
+  // impide además que un valor arbitrario llegue a `revalidatePath()`.
+  orgSlug: z
+    .string()
+    .min(1)
+    .max(MAX_SLUG_LENGTH)
+    .regex(/^[a-z0-9-]+$/),
+  caseId: z.string().min(1).max(MAX_ID_LENGTH),
+  quoteVersionId: z.string().min(1).max(MAX_ID_LENGTH),
+  audienceCustomerId: z.string().min(1).max(MAX_ID_LENGTH),
+});
 
 // `"use server"` files may only export async functions — a plain constant
 // (even a `{status:"idle"}` initial-state object) is not allowed, so the
@@ -37,14 +66,20 @@ export async function prepareAndSendAuthorizationRequest(
   _prev: PrepareAuthorizationRequestActionState,
   formData: FormData,
 ): Promise<PrepareAuthorizationRequestActionState> {
-  const orgSlug = String(formData.get("orgSlug") ?? "");
-  const caseId = String(formData.get("caseId") ?? "");
-  const quoteVersionId = String(formData.get("quoteVersionId") ?? "");
-  const audienceCustomerId = String(formData.get("audienceCustomerId") ?? "");
+  const parsed = prepareRequestSchema.safeParse({
+    orgSlug: String(formData.get("orgSlug") ?? ""),
+    caseId: String(formData.get("caseId") ?? ""),
+    quoteVersionId: String(formData.get("quoteVersionId") ?? ""),
+    audienceCustomerId: String(formData.get("audienceCustomerId") ?? ""),
+  });
 
-  if (!orgSlug || !caseId || !quoteVersionId || !audienceCustomerId) {
+  if (!parsed.success) {
+    // Sin detalle de Zod en la respuesta — ver la nota equivalente en
+    // `apps/web/src/app/a/[token]/actions.ts`.
     return { status: "error", message: "Faltan datos del caso o de la versión congelada." };
   }
+
+  const { orgSlug, caseId, quoteVersionId, audienceCustomerId } = parsed.data;
 
   const session = await getWebSession(orgSlug, "authorization.request");
   if (session.accessState.kind !== "allowed" || !session.actorId) {

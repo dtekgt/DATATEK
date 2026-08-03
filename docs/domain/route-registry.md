@@ -34,11 +34,29 @@ PlannedDetail` con `purpose`, `dependency`, `release`, `dataToBeUsed` y
 `whyDisabled`. El componente `PlannedFeatureState` (en `packages/ui`)
 renderiza ese objeto tal cual — nunca un texto genérico de "próximamente".
 
+## Por qué 58 entradas no son 58 archivos
+
+Cinco paths están registrados dos veces, por dos razones distintas. La
+aritmética conviene tenerla explícita, porque contar archivos `page.tsx` y
+llamarlo "58 rutas" da un número que sólo cuadra por accidente:
+
+| | |
+|---|---:|
+| Entradas del registro | 58 |
+| − registros dobles | 5 |
+| **Paths distintos** | **53** |
+| + paths que existen como archivo en web *y* en control (`/`, `/security`, `/status`) | 3 |
+| **Archivos `page.tsx`** | **56** |
+
+`pnpm reconcile:r0` verifica esta reconciliación y, además, la paridad exacta
+de conjuntos entre filesystem y registro: falla si existe una ruta servida sin
+declarar o una declarada que nadie sirve.
+
 ## Rutas compartidas entre superficies
 
-Dos paths físicos son compartidos intencionalmente entre el sitio público y
-una superficie funcional, porque R0-B no tiene login real y por lo tanto no
-puede distinguir "visitante" de "usuario Pass/Market" en la misma URL:
+Dos de esos cinco duplicados son un mismo archivo sirviendo dos superficies,
+porque R0-B no tiene login real y por lo tanto no puede distinguir "visitante"
+de "usuario Pass/Market" en la misma URL:
 
 - `/pass` — registrado como `public.pass` (superficie `public`) y como
   `pass.home` (superficie `pass`). Un solo archivo físico

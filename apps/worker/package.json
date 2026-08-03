@@ -4,12 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node src/index.mjs",
-    "build": "node -e \"console.log('worker: nothing to build in R0-B')\"",
+    "dev": "node src/index.ts",
+    "build": "tsc --noEmit",
     "lint": "eslint .",
-    "typecheck": "echo \"worker: no TypeScript sources in R0-B\" && exit 0",
-    "test": "echo \"worker: no tests in R0-B\" && exit 0"
+    "typecheck": "tsc --noEmit",
+    "test": "node ../../scripts/run-node-tests.mjs"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "@datatek/config": "workspace:*",
+    "@types/node": "26.1.2",
+    "expect": "30.4.1",
+    "typescript": "5.9.3"
+  }
 }

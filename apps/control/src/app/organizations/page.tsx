@@ -8,9 +8,13 @@ import { FIXTURE_ORGANIZATIONS } from "@datatek/application";
 export default function OrganizationsPage() {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
+      {/* `metadata de plataforma` describe el ALCANCE del dato (qué tan
+          poco se muestra), no su PROCEDENCIA. Son fixtures, y sin rótulo
+          esta lista se lee como el censo real de tenants. */}
+      <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-xl font-semibold">Organizaciones</h1>
         <Badge tone="neutral">metadata de plataforma</Badge>
+        <Badge tone="neutral">DEMO DATA</Badge>
       </div>
       <p className="text-sm text-[var(--color-muted-400)]">
         Lista mínima de organizaciones registradas. Ver contenido de un tenant específico exige una

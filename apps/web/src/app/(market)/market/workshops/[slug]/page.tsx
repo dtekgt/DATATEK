@@ -16,9 +16,15 @@ export default async function MarketWorkshopDetailPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
+      {/* Las dos páginas hermanas que leen ESTE MISMO view model
+          (market/page.tsx y market/workshops/page.tsx) sí rotulan DEMO DATA;
+          el detalle no lo hacía, y es justo donde se ven nombre, ciudad y
+          lista de servicios con su base de precio — lo más fácil de tomar
+          por una publicación real. */}
+      <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-xl font-semibold">{workshop.name}</h1>
         {workshop.founderBadge ? <Badge tone="brand">Taller fundador</Badge> : null}
+        <Badge tone="neutral">DEMO DATA</Badge>
       </div>
       <p className="text-sm text-[var(--color-muted-400)]">{workshop.city}</p>
       <Card>

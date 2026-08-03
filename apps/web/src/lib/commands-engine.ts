@@ -1,8 +1,15 @@
 import {
   createCommandEngine,
   buildFixtureCrmVehicleState,
+  instrumentCommandEngine,
   type CommandEngine,
 } from "@datatek/application/commands";
+import {
+  createLogger,
+  createMetricsRegistry,
+  jsonLineSink,
+  type MetricsRegistry,
+} from "@datatek/application";
 
 // R0-D Fase 1 — server-side, in-memory command engine singleton.
 //
@@ -46,16 +53,56 @@ declare global {
   // block (TypeScript itself requires `var` here), so no suppression
   // comment is needed.
   var __datatekCommandsEngine: CommandEngine | undefined;
+  var __datatekMetrics: MetricsRegistry | undefined;
+}
+
+// R0-E Fase 3 — el registro de métricas vive en `globalThis` por la MISMA
+// razón que el motor (ver arriba): si cada grafo de módulos de webpack se
+// quedara con su propio registro, las series se partirían entre
+// instanciaciones y ningún conteo cuadraría. Es en-proceso y se pierde al
+// reiniciar; ese límite está declarado en la cabecera de metrics.ts y no se
+// disfraza aquí.
+function getMetricsRegistry(): MetricsRegistry {
+  if (!globalThis.__datatekMetrics) {
+    globalThis.__datatekMetrics = createMetricsRegistry();
+  }
+  return globalThis.__datatekMetrics;
+}
+
+/** Envuelve el motor para que CADA comando emita su línea de log y su
+ * métrica. Se hace en este único punto —y no editando `engine.ts`— para que
+ * un comando nuevo quede instrumentado el día que se agrega, sin que nadie
+ * tenga que acordarse; ver el comentario de `instrumentCommandEngine`. */
+function buildInstrumentedEngine(): CommandEngine {
+  return instrumentCommandEngine(createCommandEngine(buildFixtureCrmVehicleState()), {
+    logger: createLogger({
+      app: "web",
+      environment: process.env.NODE_ENV ?? "development",
+      // Una línea JSON por comando a stdout, el mismo artefacto que ya
+      // emite `apps/worker`. `console.log` es el transporte correcto aquí:
+      // en Node el stdout del proceso ES el canal de logs.
+      // eslint-disable-next-line no-console
+      sink: jsonLineSink((line) => console.log(line)),
+    }),
+    metrics: getMetricsRegistry(),
+  });
 }
 
 export function getCommandsEngine(): CommandEngine {
   if (!globalThis.__datatekCommandsEngine) {
-    globalThis.__datatekCommandsEngine = createCommandEngine(buildFixtureCrmVehicleState());
+    globalThis.__datatekCommandsEngine = buildInstrumentedEngine();
   }
   return globalThis.__datatekCommandsEngine;
 }
 
 /** Test/dev-only escape hatch — never called from product code. */
 export function resetCommandsEngine(): void {
-  globalThis.__datatekCommandsEngine = createCommandEngine(buildFixtureCrmVehicleState());
+  globalThis.__datatekCommandsEngine = buildInstrumentedEngine();
+}
+
+/** Instantánea de métricas del proceso. Sólo para uso operativo/interno —
+ * ninguna pantalla de producto la consume (sección 13: "No mostrar métricas
+ * de negocio inventadas al usuario"). */
+export function getCommandMetricsSnapshot() {
+  return getMetricsRegistry().snapshot();
 }

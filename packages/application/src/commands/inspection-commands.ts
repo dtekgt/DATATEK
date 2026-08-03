@@ -42,8 +42,10 @@ import {
 import {
   appendAuditEvent,
   appendIdempotencyRecord,
+  checkIdempotencyKeyConflict,
   cryptoRandomId,
   findIdempotentReplay,
+  hashCommandInput,
   type CommandOutcome,
   type CrmVehicleState,
   type InspectionRow,
@@ -658,6 +660,17 @@ export function confirmEvidenceUpload(
   ctx: CommandContext,
   input: ConfirmEvidenceUploadInput,
 ): CommandOutcome<EvidenceAssetRow> {
+  // DATATEK_R0_E hardening sección 7: misma key + input distinto falla —
+  // ver el comentario en `checkIdempotencyKeyConflict` (state.ts).
+  const inputHash = hashCommandInput(input);
+  const keyConflict = checkIdempotencyKeyConflict(
+    state,
+    ctx,
+    COMMAND_CONFIRM_EVIDENCE_UPLOAD,
+    inputHash,
+  );
+  if (keyConflict) return { ok: false, error: keyConflict };
+
   const replay = findIdempotentReplay<EvidenceAssetRow>(
     state,
     ctx,
@@ -738,7 +751,7 @@ export function confirmEvidenceUpload(
     uploadIntents: state.uploadIntents.map((u) => (u.id === uploadIntent.id ? updatedIntent : u)),
     idempotencyRecords: [
       ...state.idempotencyRecords,
-      appendIdempotencyRecord(ctx, COMMAND_CONFIRM_EVIDENCE_UPLOAD, asset),
+      appendIdempotencyRecord(ctx, COMMAND_CONFIRM_EVIDENCE_UPLOAD, asset, inputHash),
     ],
     auditLog: [...state.auditLog, auditEvent],
   };

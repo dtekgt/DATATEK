@@ -27,9 +27,15 @@ export default async function OrganizationDetailPage({
   return (
     <AccessBoundary state={accessState}>
       <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
+        {/* `sesión elevada activa` es un estado de acceso, no una
+            procedencia: la organización, el ticket, la razón y el
+            vencimiento de abajo son fixtures. Un registro de acceso
+            elevado sin rotular es precisamente lo que una auditoría
+            no debe poder confundir con la bitácora real. */}
+        <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-xl font-semibold">{org.label}</h1>
           <Badge tone="warning">sesión elevada activa</Badge>
+          <Badge tone="neutral">DEMO DATA</Badge>
         </div>
         <Card>
           <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">

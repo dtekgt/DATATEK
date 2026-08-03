@@ -15,6 +15,10 @@
     "src/lib/limited-auth.ts",
     "src/lib/limited-auth.test.ts",
     "src/lib/fixture-session.ts",
-    "src/lib/fixture-session.test.ts"
+    "src/lib/fixture-session.test.ts",
+    "src/lib/session-cookie.ts",
+    "src/lib/session-cookie.test.ts",
+    "src/lib/rate-limit.ts",
+    "src/lib/rate-limit.test.ts"
   ]
 }

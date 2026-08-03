@@ -162,9 +162,17 @@ export function OperationalNextActionCard({ vm }: { vm: OperationalNextActionVie
 export function CaseProofSummary({ vm }: { vm: CaseProofSummaryViewModel }) {
   return (
     <Card>
-      <p className="text-xs uppercase tracking-wide text-[var(--color-muted-400)]">
-        Respaldo del caso
-      </p>
+      {/* El view model siempre trajo `demo`, pero este componente lo
+          descartaba: la misma tarjeta se renderiza sobre el motor real y
+          sobre fixtures, así que era el rótulo de la página —no el de la
+          tarjeta— lo único que las distinguía. Un "respaldo del caso" es
+          justo lo que se recorta y se comparte suelto. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs uppercase tracking-wide text-[var(--color-muted-400)]">
+          Respaldo del caso
+        </p>
+        {vm.demo ? <Badge tone="neutral">DEMO DATA</Badge> : null}
+      </div>
       <dl className="mt-2 grid grid-cols-2 gap-3 text-sm">
         <div>
           <dt className="text-[var(--color-muted-400)]">Evidencia</dt>

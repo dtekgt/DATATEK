@@ -84,7 +84,14 @@ export function Topbar({ title, actions, onOpenMobileNav }: TopbarProps) {
           <Menu className="h-5 w-5" aria-hidden />
         </button>
       ) : null}
-      <h1 className="truncate text-base font-semibold">{title}</h1>
+      {/* R0-E Fase 4 — esto era un `<h1>`. La barra superior es cromo
+          persistente: aparece en TODA ruta con shell, así que cada página de
+          contenido terminaba con dos `<h1>` (el de la barra y el suyo). El
+          encabezado de nivel 1 pertenece al contenido de `<main>`, que es lo
+          que un lector de pantalla espera encontrar al navegar por
+          encabezados; el título de la barra es orientación, no el título del
+          documento. */}
+      <p className="truncate text-base font-semibold">{title}</p>
       <div className="ml-auto flex items-center gap-2">{actions}</div>
     </header>
   );

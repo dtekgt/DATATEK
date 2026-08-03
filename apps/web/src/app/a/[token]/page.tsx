@@ -2,6 +2,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import {
   AuthorizationCard,
   AuthorizationReceipt,
+  Badge,
   Card,
   ErrorState,
   InlineAlert,
@@ -66,7 +67,7 @@ type RealView =
       canDecide: boolean;
       quoteVersionId: string;
       quoteVersionHash: string;
-      items: { id: string; label: string }[];
+      items: { id: string; label: string; amountMinor: number; currency: string }[];
     };
 
 /** Real resolution for any token NOT in the R0-B demo map — calls the real
@@ -166,9 +167,15 @@ async function resolveRealAuthorizationView(token: string): Promise<RealView> {
     canDecide: scope === "read_and_decide",
     quoteVersionId: version.id,
     quoteVersionHash: version.snapshotHash ?? "",
+    // El monto va SUELTO además de dentro de `label`. El formulario necesita
+    // sumarlo en el cliente conforme el cliente marca y desmarca renglones, y
+    // volver a parsear el precio desde el texto de la etiqueta sería frágil
+    // (depende del separador, del formato de `Intl` y del idioma).
     items: items.map((i) => ({
       id: i.id,
       label: `${i.description} — ${formatMoney(i.totalMinor, i.currency)}`,
+      amountMinor: i.totalMinor,
+      currency: i.currency,
     })),
   };
 }
@@ -230,13 +237,29 @@ export default async function LimitedAuthorizationPage({
     }
 
     if (demoState === "review") {
+      // Esta pantalla renderiza el MISMO `AuthorizationCard` que el enlace
+      // real de abajo (línea ~326). Sin un rótulo era indistinguible de una
+      // solicitud auténtica: mostraba un hash con forma de hash real sobre
+      // renglones inventados. En una plataforma cuyo producto es la
+      // confianza, una pantalla de ejemplo que se hace pasar por real es el
+      // peor defecto posible — de ahí el triple marcaje (badge, aviso y un
+      // hash que se declara falso en los 10 caracteres que la tarjeta
+      // llega a mostrar).
       return (
         <div className="flex flex-col gap-4">
-          <h1 className="text-lg font-semibold">Revisa la solicitud</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-semibold">Revisa la solicitud</h1>
+            <Badge tone="neutral">DEMO DATA</Badge>
+          </div>
+          <InlineAlert
+            tone="warning"
+            title="Este es un estado de ejemplo"
+            description="Ninguno de estos renglones, montos o firmas corresponde a un vehículo real, y esta pantalla no puede registrar ninguna decisión. Un enlace real muestra la cotización congelada de tu caso."
+          />
           <AuthorizationCard
             requestStatus="viewed"
-            versionLabel="Cotización v2"
-            hash="a3f9c7e21b8d4f0012ab"
+            versionLabel="Cotización v2 (ejemplo)"
+            hash="DEMO-NO-ES-UN-HASH-REAL"
             lines={["Cambio de pastillas delanteras", "Revisión de disco delantero"]}
             expiresAt="2026-08-05T17:00:00-06:00"
           />

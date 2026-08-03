@@ -5,6 +5,7 @@ import {
   CONTROL_SESSION_COOKIE_NAME,
   FIXTURE_PLATFORM_ACTOR_OPTIONS,
 } from "../lib/fixture-session";
+import { buildControlSessionCookieOptions } from "../lib/session-cookie";
 
 // R0-C fixture login for Control — a separate cookie from apps/web
 // (sección 5.4: "usa aplicación y cookie separadas"). Same fixture-only
@@ -12,14 +13,22 @@ import {
 // real Supabase Auth session in this sandbox.
 async function loginAction(formData: FormData) {
   "use server";
-  const actorId = String(formData.get("actorId") ?? "");
+  // Sección 9: "Server Actions revalidan como endpoints públicos". El
+  // actor debe pertenecer a la lista cerrada de actores de PLATAFORMA —
+  // antes de esta fase cualquier string entraba a la cookie, incluido el
+  // id de un actor de taller, que no tiene nada que hacer en Control.
+  const requestedActorId = String(formData.get("actorId") ?? "");
+  const actor = FIXTURE_PLATFORM_ACTOR_OPTIONS.find((a) => a.id === requestedActorId);
+  if (!actor) {
+    redirect("/");
+  }
+
   const store = await cookies();
-  store.set(CONTROL_SESSION_COOKIE_NAME, actorId, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-  });
+  store.set(
+    CONTROL_SESSION_COOKIE_NAME,
+    actor.id,
+    buildControlSessionCookieOptions(process.env.NODE_ENV === "production"),
+  );
   redirect("/");
 }
 

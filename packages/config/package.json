@@ -5,7 +5,9 @@
   "main": "index.js",
   "files": [
     "tsconfig.base.json",
-    "eslint.base.mjs"
+    "eslint.base.mjs",
+    "security-headers.mjs",
+    "security-headers.d.mts"
   ],
   "devDependencies": {
     "typescript": "5.9.3"

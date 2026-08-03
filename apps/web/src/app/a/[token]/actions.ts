@@ -9,8 +9,45 @@
 // `VerifyAuthorizationAccess` call from the same visit — see
 // `docs/domain/authorization-security.md`, "consumo atómico").
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { buildGuestCommandContext } from "../../../lib/guest-authorization";
 import { getCommandsEngine } from "../../../lib/commands-engine";
+
+// DATATEK_R0_E sección 9: "Zod en límites" y "payload limits".
+//
+// Este Server Action es el ÚNICO punto en el que un invitado no
+// autenticado escribe en el sistema, así que es literalmente un endpoint
+// público y se valida como tal. Antes de esta fase la validación era una
+// serie de `if` sobre `String(formData.get(...))`: comprobaba presencia y
+// el valor del enum, pero NINGÚN límite de tamaño. Un POST directo al
+// Server Action (sin pasar por el formulario) podía mandar un
+// `rejectionReason` de megabytes o un `acceptedQuoteItemIds` con cientos de
+// miles de entradas, y el motor los habría procesado.
+//
+// Los topes son deliberadamente holgados para uso legítimo y estrechos
+// frente a abuso. El token NO se valida por formato aquí a propósito: su
+// única autoridad es `RecordAuthorization`, que lo re-resuelve, cuenta
+// intentos y devuelve un error neutral. Rechazarlo antes por "forma
+// inválida" produciría un error DISTINTO al de un token válido pero
+// equivocado, y eso es exactamente la distinción pública que la sección
+// 10.2 prohíbe.
+const MAX_TOKEN_LENGTH = 512;
+const MAX_ID_LENGTH = 128;
+const MAX_REJECTION_REASON_LENGTH = 1_000;
+const MAX_ACCEPTED_ITEMS = 200;
+
+const decisionFormSchema = z
+  .object({
+    token: z.string().min(1).max(MAX_TOKEN_LENGTH),
+    quoteVersionId: z.string().min(1).max(MAX_ID_LENGTH),
+    quoteVersionHash: z.string().min(1).max(MAX_ID_LENGTH),
+    decision: z.enum(["accept_all", "partial", "reject"]),
+    acceptedQuoteItemIds: z.array(z.string().min(1).max(MAX_ID_LENGTH)).max(MAX_ACCEPTED_ITEMS),
+    rejectionReason: z.string().max(MAX_REJECTION_REASON_LENGTH).nullable(),
+  })
+  .refine((v) => v.decision !== "partial" || v.acceptedQuoteItemIds.length > 0, {
+    message: "partial_requires_items",
+  });
 
 // `"use server"` files may only export async functions — a plain constant
 // (even a `{status:"idle"}` initial-state object) is not allowed, so the
@@ -27,22 +64,32 @@ export async function submitAuthorizationDecision(
   _prev: AuthorizationDecisionActionState,
   formData: FormData,
 ): Promise<AuthorizationDecisionActionState> {
-  const token = String(formData.get("token") ?? "");
-  const quoteVersionId = String(formData.get("quoteVersionId") ?? "");
-  const quoteVersionHash = String(formData.get("quoteVersionHash") ?? "");
-  const decisionRaw = String(formData.get("decision") ?? "");
-  const acceptedQuoteItemIds = formData.getAll("acceptedQuoteItemIds").map(String);
-  const rejectionReason = formData.get("rejectionReason");
+  const rawRejectionReason = formData.get("rejectionReason");
+  const parsed = decisionFormSchema.safeParse({
+    token: String(formData.get("token") ?? ""),
+    quoteVersionId: String(formData.get("quoteVersionId") ?? ""),
+    quoteVersionHash: String(formData.get("quoteVersionHash") ?? ""),
+    decision: String(formData.get("decision") ?? ""),
+    acceptedQuoteItemIds: formData.getAll("acceptedQuoteItemIds").map(String),
+    rejectionReason: typeof rawRejectionReason === "string" ? rawRejectionReason : null,
+  });
 
-  if (!token || !quoteVersionId || !quoteVersionHash) {
-    return { status: "error", message: "Falta información de la solicitud." };
+  if (!parsed.success) {
+    // Mensaje genérico y estable. NUNCA se devuelve el detalle de Zod: sus
+    // `issues` incluyen el `path` y a veces el valor recibido, que aquí
+    // sería el token del cliente (sección 9: "errores sin stack/PII").
+    const isPartialWithoutItems = parsed.error.issues.some(
+      (i) => i.message === "partial_requires_items",
+    );
+    return {
+      status: "error",
+      message: isPartialWithoutItems
+        ? "Selecciona al menos una línea para una decisión parcial."
+        : "Falta información de la solicitud o el formato no es válido.",
+    };
   }
-  if (decisionRaw !== "accept_all" && decisionRaw !== "partial" && decisionRaw !== "reject") {
-    return { status: "error", message: "Elige una opción de decisión." };
-  }
-  if (decisionRaw === "partial" && acceptedQuoteItemIds.length === 0) {
-    return { status: "error", message: "Selecciona al menos una línea para una decisión parcial." };
-  }
+
+  const { token, quoteVersionId, quoteVersionHash, decision, acceptedQuoteItemIds } = parsed.data;
 
   const ctx = buildGuestCommandContext(token);
   const result = getCommandsEngine().recordAuthorization(ctx, {
@@ -50,11 +97,11 @@ export async function submitAuthorizationDecision(
     token,
     quoteVersionId,
     quoteVersionHash,
-    decision: decisionRaw,
-    acceptedQuoteItemIds: decisionRaw === "partial" ? acceptedQuoteItemIds : undefined,
+    decision,
+    acceptedQuoteItemIds: decision === "partial" ? acceptedQuoteItemIds : undefined,
     rejectionReason:
-      decisionRaw === "reject" && typeof rejectionReason === "string" && rejectionReason.trim()
-        ? rejectionReason.trim()
+      decision === "reject" && parsed.data.rejectionReason?.trim()
+        ? parsed.data.rejectionReason.trim()
         : null,
   });
 

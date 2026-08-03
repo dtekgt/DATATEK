@@ -23,8 +23,10 @@ import {
 import {
   appendAuditEvent,
   appendIdempotencyRecord,
+  checkIdempotencyKeyConflict,
   cryptoRandomId,
   findIdempotentReplay,
+  hashCommandInput,
   type CommandOutcome,
   type CrmVehicleState,
   type QuoteRow,
@@ -529,6 +531,17 @@ export function freezeQuoteVersion(
   ctx: CommandContext,
   input: FreezeQuoteVersionInput,
 ): CommandOutcome<QuoteVersionRow> {
+  // DATATEK_R0_E hardening sección 7: misma key + input distinto falla —
+  // ver el comentario en `checkIdempotencyKeyConflict` (state.ts).
+  const inputHash = hashCommandInput(input);
+  const keyConflict = checkIdempotencyKeyConflict(
+    state,
+    ctx,
+    COMMAND_FREEZE_QUOTE_VERSION,
+    inputHash,
+  );
+  if (keyConflict) return { ok: false, error: keyConflict };
+
   const replay = findIdempotentReplay<QuoteVersionRow>(state, ctx, COMMAND_FREEZE_QUOTE_VERSION);
   if (replay) return { ok: true, nextState: state, data: replay, replayed: true };
 
@@ -614,7 +627,7 @@ export function freezeQuoteVersion(
     quoteVersions: state.quoteVersions.map((v) => (v.id === version.id ? frozen : v)),
     idempotencyRecords: [
       ...state.idempotencyRecords,
-      appendIdempotencyRecord(ctx, COMMAND_FREEZE_QUOTE_VERSION, frozen),
+      appendIdempotencyRecord(ctx, COMMAND_FREEZE_QUOTE_VERSION, frozen, inputHash),
     ],
     auditLog: [...state.auditLog, auditEvent],
   };

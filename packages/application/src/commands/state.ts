@@ -17,6 +17,7 @@
 // Every organization's *access* to that shared row is mediated entirely by
 // `vehicle_access_grants` — never by the vehicle/identifier rows
 // themselves — which is what makes "VIN/placa no otorgan lectura" true.
+import { createHash } from "node:crypto";
 import type {
   Provenance,
   Visibility,
@@ -822,6 +823,18 @@ export interface IdempotencyRecord {
   key: string;
   organizationId: string;
   commandName: string;
+  /** sha256 hex of a canonical serialization of the command's input —
+   * DATATEK_R0_E hardening sección 7 ("hash de input"). Optional and, as of
+   * this pass, only populated by the 6 commands sección 7 names as
+   * "obligatorios" (`CreateCaseFromIntake`, `ScheduleAppointment`,
+   * `ConfirmEvidenceUpload`, `FreezeQuoteVersion`,
+   * `PrepareAuthorizationRequest`, `RecordAuthorization` — see
+   * `checkIdempotencyKeyConflict` below and its call sites). Every other
+   * command in this engine still matches a replay on
+   * `(organizationId, commandName, key)` alone, same as before this pass —
+   * a known, documented gap (DATATEK_R0_E_FASE1_REPORT.md), not silently
+   * widened to every command in one sweep. */
+  inputHash?: string;
   /** Serializable snapshot of the successful result, replayed verbatim on a
    * repeat call with the same key instead of re-running the command. */
   resultSummary: unknown;
@@ -975,6 +988,7 @@ export function appendIdempotencyRecord(
   ctx: CommandContext,
   commandName: string,
   resultSummary: unknown,
+  inputHash?: string,
 ): IdempotencyRecord {
   return {
     key: ctx.idempotencyKey,
@@ -982,7 +996,75 @@ export function appendIdempotencyRecord(
     commandName,
     resultSummary,
     createdAt: ctx.now.toISOString(),
+    ...(inputHash != null ? { inputHash } : {}),
   };
+}
+
+/** Deterministic, sorted-key clone used only to make `JSON.stringify`
+ * produce the SAME string for two structurally-equal objects regardless of
+ * the order their keys were set in — plain `JSON.stringify` preserves
+ * insertion order, which would make `hashCommandInput` produce different
+ * hashes for semantically identical inputs built in a different order. */
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value != null && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const k of Object.keys(value as Record<string, unknown>).sort()) {
+      out[k] = canonicalize((value as Record<string, unknown>)[k]);
+    }
+    return out;
+  }
+  return value;
+}
+
+/** sha256 hex of a canonical (sorted-key) JSON serialization of `input` —
+ * DATATEK_R0_E hardening sección 7, "hash de input". Used ONLY to detect
+ * "misma idempotency key, input DISTINTO" (sección 7: "falla con error
+ * claro; no debe devolver silenciosamente el resultado viejo") — never to
+ * identify or authenticate anything. Every mandated caller below hashes its
+ * own already-validated command `input` object directly (ids, enums,
+ * amounts, dates) — sección 7 also requires "claves [de idempotencia] no
+ * contienen PII"; this hash is not the key itself, but the same
+ * expectation applies to what it is derived from, and none of the 6
+ * mandated commands' inputs carry a customer's name/phone/email (those live
+ * on rows the input only references by id). */
+export function hashCommandInput(input: unknown): string {
+  return createHash("sha256")
+    .update(JSON.stringify(canonicalize(input)), "utf8")
+    .digest("hex");
+}
+
+/** DATATEK_R0_E hardening sección 7: "misma key + input distinto falla". A
+ * narrow, ADDITIVE guard a command calls before its normal
+ * `findIdempotentReplay` check. Only changes behavior when a PRIOR record
+ * exists for the same `(organizationId, commandName, key)` AND that record
+ * carries a stored `inputHash` AND it differs from `expectedInputHash` — in
+ * every other case (no prior record; prior record has no `inputHash` because
+ * it predates this pass or belongs to a command that does not opt in; hashes
+ * match) this returns `null` and the caller proceeds exactly as before. This
+ * is what keeps the fix bounded to the 6 sección-7-mandated commands instead
+ * of touching every command's idempotency behavior in one sweep — see the
+ * comment on `IdempotencyRecord.inputHash`. */
+export function checkIdempotencyKeyConflict(
+  state: CrmVehicleState,
+  ctx: CommandContext,
+  commandName: string,
+  expectedInputHash: string,
+): CommandError | null {
+  const found = state.idempotencyRecords.find(
+    (r) =>
+      r.organizationId === ctx.organizationId &&
+      r.commandName === commandName &&
+      r.key === ctx.idempotencyKey,
+  );
+  if (found && found.inputHash != null && found.inputHash !== expectedInputHash) {
+    return {
+      code: "CONFLICT",
+      message:
+        "Esta idempotency key ya se usó con un input distinto para este comando — una misma key debe representar siempre el mismo intento, con el mismo contenido.",
+    };
+  }
+  return null;
 }
 
 export function appendAuditEvent(

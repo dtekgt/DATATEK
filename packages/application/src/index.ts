@@ -23,6 +23,18 @@ export * from "./fixtures/decisions.ts";
 export * from "./fixtures/pricing.ts";
 export * from "./fixtures/tenancy.ts";
 
+// Observabilidad (R0-E Fase 3). Sólo los tres módulos PUROS entran al barrel
+// principal: `logger.ts` toca `commands/context.ts` únicamente con
+// `import type` (se borra al compilar, no arrastra nada al bundle), y
+// `health.ts`/`metrics.ts` no importan nada del proyecto.
+// `command-observability.ts` queda FUERA a propósito: envuelve
+// `commands/engine.ts`, que alcanza `node:crypto`. Se exporta desde el
+// barrel server-only (commands.ts), por la misma razón explicada al pie de
+// este archivo.
+export * from "./observability/logger.ts";
+export * from "./observability/health.ts";
+export * from "./observability/metrics.ts";
+
 export * from "./adapters/pro-adapters.ts";
 export * from "./adapters/pass-adapters.ts";
 export * from "./adapters/market-adapters.ts";

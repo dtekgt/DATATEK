@@ -1,12 +1,5 @@
-import type { ComponentType } from "react";
-import * as icons from "lucide-react";
-import { HelpCircle } from "lucide-react";
-
-type IconName = keyof typeof icons;
-type LucideComponent = ComponentType<{ className?: string }>;
-
-export function RouteIcon({ name, className }: { name: string; className?: string }) {
-  const Component = (icons as unknown as Record<IconName, LucideComponent>)[name as IconName];
-  const Resolved = Component ?? HelpCircle;
-  return <Resolved className={className} aria-hidden />;
-}
+// Gemelo de apps/web/src/lib/icon.tsx — el mapa compartido vive en
+// `@datatek/ui`. Antes de R0-E Fase 3 este archivo tenía su propia copia de
+// `import * as icons from "lucide-react"`, así que el costo de 603 KB se
+// pagaba DOS veces, una por app.
+export { RouteIcon, ROUTE_ICONS } from "@datatek/ui";

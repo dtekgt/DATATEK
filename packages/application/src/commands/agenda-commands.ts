@@ -35,8 +35,10 @@ import {
 import {
   appendAuditEvent,
   appendIdempotencyRecord,
+  checkIdempotencyKeyConflict,
   cryptoRandomId,
   findIdempotentReplay,
+  hashCommandInput,
   type CommandOutcome,
   type CrmVehicleState,
   type ResourceReservationRow,
@@ -196,6 +198,17 @@ export function scheduleAppointment(
   ctx: CommandContext,
   input: ScheduleAppointmentInput,
 ): CommandOutcome<ScheduleAppointmentOutput> {
+  // DATATEK_R0_E hardening sección 7: misma key + input distinto falla —
+  // ver el comentario en `checkIdempotencyKeyConflict` (state.ts).
+  const inputHash = hashCommandInput(input);
+  const keyConflict = checkIdempotencyKeyConflict(
+    state,
+    ctx,
+    COMMAND_SCHEDULE_APPOINTMENT,
+    inputHash,
+  );
+  if (keyConflict) return { ok: false, error: keyConflict };
+
   const replay = findIdempotentReplay<ScheduleAppointmentOutput>(
     state,
     ctx,
@@ -311,7 +324,7 @@ export function scheduleAppointment(
     assignmentEvents: [...state.assignmentEvents, ...assignmentEvents],
     idempotencyRecords: [
       ...state.idempotencyRecords,
-      appendIdempotencyRecord(ctx, COMMAND_SCHEDULE_APPOINTMENT, output),
+      appendIdempotencyRecord(ctx, COMMAND_SCHEDULE_APPOINTMENT, output, inputHash),
     ],
     auditLog: [...state.auditLog, auditEvent],
   };

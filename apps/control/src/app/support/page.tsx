@@ -13,7 +13,13 @@ export default async function SupportPage() {
   return (
     <AccessBoundary state={session.accessState}>
       <div className="flex flex-col gap-4">
-        <h1 className="text-xl font-semibold">Soporte — sesiones elevadas</h1>
+        {/* Los únicos badges de esta pantalla mostraban el `status` crudo
+            de cada sesión, lo que la hacía leerse como la bitácora real de
+            accesos elevados. Ticket, razón y vencimiento son sembrados. */}
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-xl font-semibold">Soporte — sesiones elevadas</h1>
+          <Badge tone="neutral">DEMO DATA</Badge>
+        </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {FIXTURE_SUPPORT_ACCESS_SESSIONS.map((s) => {
             const org = FIXTURE_ORGANIZATIONS.find((o) => o.id === s.organizationId);

@@ -96,17 +96,29 @@ export function ForbiddenState({
 export interface PlannedFeatureStateProps {
   title: string;
   detail: PlannedDetail;
+  /**
+   * Elemento del título. Por defecto `p`, porque esta tarjeta también se usa
+   * DENTRO de páginas que ya tienen su propio encabezado.
+   *
+   * Cuando la tarjeta ES el contenido completo de una ruta —el caso de las 28
+   * rutas `planned`, que renderizan sólo `<PlannedRoute>`— quien la usa pasa
+   * `"h1"`: si no, esa página se queda literalmente sin ningún encabezado
+   * propio, y navegar por encabezados con lector de pantalla no encuentra
+   * nada. Ver R0-E Fase 4.
+   */
+  titleAs?: "p" | "h1";
 }
 
 /** Ley 29: una feature futura se oculta o usa `PlannedFeatureState`; nunca
  * simula éxito. Explica propósito, dependencia, release, datos y por qué está
  * deshabilitada — nunca solo "próximamente". */
-export function PlannedFeatureState({ title, detail }: PlannedFeatureStateProps) {
+export function PlannedFeatureState({ title, detail, titleAs = "p" }: PlannedFeatureStateProps) {
+  const Title = titleAs;
   return (
     <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-dashed border-white/15 p-6">
       <div className="flex items-center gap-2">
         <Clock3 className="h-5 w-5 text-[var(--color-info-400)]" aria-hidden />
-        <p className="text-base font-medium">{title}</p>
+        <Title className="text-base font-medium">{title}</Title>
         <span className="ml-auto rounded-full border border-white/20 px-2 py-0.5 text-xs uppercase tracking-wide text-[var(--color-muted-400)]">
           Planificado · {detail.release}
         </span>

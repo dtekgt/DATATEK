@@ -39,8 +39,10 @@ import { transitionCase } from "./intake-commands.ts";
 import {
   appendAuditEvent,
   appendIdempotencyRecord,
+  checkIdempotencyKeyConflict,
   cryptoRandomId,
   findIdempotentReplay,
+  hashCommandInput,
   isFeatureEnabled,
   FEATURE_KEY_AUTHORIZATION_REISSUE,
   type CommandOutcome,
@@ -104,6 +106,17 @@ export function prepareAuthorizationRequest(
   ctx: CommandContext,
   input: PrepareAuthorizationRequestInput,
 ): CommandOutcome<PrepareAuthorizationRequestOutput> {
+  // DATATEK_R0_E hardening sección 7: misma key + input distinto falla —
+  // ver el comentario en `checkIdempotencyKeyConflict` (state.ts).
+  const inputHash = hashCommandInput(input);
+  const keyConflict = checkIdempotencyKeyConflict(
+    state,
+    ctx,
+    COMMAND_PREPARE_AUTHORIZATION_REQUEST,
+    inputHash,
+  );
+  if (keyConflict) return { ok: false, error: keyConflict };
+
   const replay = findIdempotentReplay<PrepareAuthorizationRequestOutput>(
     state,
     ctx,
@@ -245,7 +258,7 @@ export function prepareAuthorizationRequest(
     authorizationEvents: [...stateAfterCaseTransition.authorizationEvents, event],
     idempotencyRecords: [
       ...stateAfterCaseTransition.idempotencyRecords,
-      appendIdempotencyRecord(ctx, COMMAND_PREPARE_AUTHORIZATION_REQUEST, output),
+      appendIdempotencyRecord(ctx, COMMAND_PREPARE_AUTHORIZATION_REQUEST, output, inputHash),
     ],
     auditLog: [...stateAfterCaseTransition.auditLog, auditEvent],
   };
@@ -629,6 +642,19 @@ export function recordAuthorization(
   ctx: CommandContext,
   input: RecordAuthorizationInput,
 ): CommandOutcome<RecordAuthorizationOutput> {
+  // DATATEK_R0_E hardening sección 7: misma key + input distinto falla —
+  // ver el comentario en `checkIdempotencyKeyConflict` (state.ts). Checked
+  // BEFORE token resolution so a reused key with different content never
+  // even attempts to consume/increment a token's attempt counter.
+  const inputHash = hashCommandInput(input);
+  const keyConflict = checkIdempotencyKeyConflict(
+    state,
+    ctx,
+    COMMAND_RECORD_AUTHORIZATION,
+    inputHash,
+  );
+  if (keyConflict) return { ok: false, error: keyConflict };
+
   const replay = findIdempotentReplay<RecordAuthorizationOutput>(
     state,
     ctx,
@@ -922,7 +948,7 @@ export function recordAuthorization(
     ...stateAfterAuthorization,
     idempotencyRecords: [
       ...stateAfterAuthorization.idempotencyRecords,
-      appendIdempotencyRecord(ctx, COMMAND_RECORD_AUTHORIZATION, output),
+      appendIdempotencyRecord(ctx, COMMAND_RECORD_AUTHORIZATION, output, inputHash),
     ],
     auditLog: [...stateAfterAuthorization.auditLog, auditEvent],
   };

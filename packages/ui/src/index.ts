@@ -13,6 +13,7 @@ export * from "./primitives/feedback";
 export * from "./states/states";
 
 export * from "./nav/shell-parts";
+export * from "./icons/route-icons";
 
 export * from "./domain/case";
 export * from "./domain/vehicle";

@@ -15,6 +15,8 @@
     "src/lib/env.ts",
     "src/lib/env.test.ts",
     "src/lib/fixture-session.ts",
-    "src/lib/fixture-session.test.ts"
+    "src/lib/fixture-session.test.ts",
+    "src/lib/session-cookie.ts",
+    "src/lib/session-cookie.test.ts"
   ]
 }

@@ -10,9 +10,14 @@ export default async function UsersPage() {
   return (
     <AccessBoundary state={session.accessState}>
       <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
+        {/* La tabla lista actores sembrados, no usuarios reales de
+            plataforma. Sin rótulo, una lista de "quién tiene acceso a
+            Control" es exactamente el tipo de dato que nadie debería
+            confundir con el real. */}
+        <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-xl font-semibold">Usuarios de plataforma</h1>
           <Badge tone="neutral">independiente de membership de organización</Badge>
+          <Badge tone="neutral">DEMO DATA</Badge>
         </div>
         <DataTable
           caption="Usuarios de plataforma"

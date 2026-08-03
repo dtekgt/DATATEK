@@ -6,6 +6,7 @@ import {
   FIXTURE_ACTOR_OPTIONS,
   FIXTURE_ORGANIZATIONS,
 } from "../lib/fixture-session";
+import { buildSessionCookieOptions } from "../lib/session-cookie";
 
 // R0-C fixture login for Pro, rendered inline wherever AccessBoundary
 // resolves "unauthenticated" — never a dedicated page route, so the R0-A/B
@@ -20,16 +21,36 @@ import {
 // authenticate anything.
 async function loginAction(formData: FormData) {
   "use server";
-  const actorId = String(formData.get("actorId") ?? "");
-  const orgSlug = String(formData.get("orgSlug") ?? FIXTURE_ORGANIZATIONS[0].slug);
+  // DATATEK_R0_E sección 9: "Server Actions revalidan como endpoints
+  // públicos". Un Server Action es un POST invocable directamente — que
+  // el <select> de abajo solo ofrezca valores válidos no impide que
+  // alguien mande otros. Antes de esta fase ambos campos se escribían tal
+  // cual, lo que permitía (a) sembrar la cookie de sesión con un string
+  // arbitrario y (b) inyectar un `orgSlug` no validado dentro del destino
+  // de `redirect()`. Aquí se validan contra la LISTA CERRADA de valores
+  // sembrados — una allowlist, no un saneamiento.
+  const requestedActorId = String(formData.get("actorId") ?? "");
+  const requestedOrgSlug = String(formData.get("orgSlug") ?? "");
+
+  const actor = FIXTURE_ACTOR_OPTIONS.find((a) => a.id === requestedActorId);
+  const organization =
+    FIXTURE_ORGANIZATIONS.find((o) => o.slug === requestedOrgSlug) ?? FIXTURE_ORGANIZATIONS[0];
+
+  if (!actor) {
+    // Error neutral: no confirma si el actor existe pero no es elegible, o
+    // si simplemente no existe.
+    redirect("/");
+  }
+
   const store = await cookies();
-  store.set(SESSION_COOKIE_NAME, actorId, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-  });
-  redirect(`/pro/o/${orgSlug}/dashboard`);
+  store.set(
+    SESSION_COOKIE_NAME,
+    actor.id,
+    buildSessionCookieOptions(process.env.NODE_ENV === "production"),
+  );
+  // `organization.slug` viene del catálogo, nunca del formulario, así que
+  // el destino del redirect no puede ser controlado por quien envía.
+  redirect(`/pro/o/${organization.slug}/dashboard`);
 }
 
 export function FixtureLoginForm() {

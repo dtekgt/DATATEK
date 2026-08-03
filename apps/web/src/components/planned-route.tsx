@@ -10,6 +10,7 @@ export function PlannedRoute({ routeId }: { routeId: string }) {
     return (
       <PlannedFeatureState
         title="Ruta no encontrada"
+        titleAs="h1"
         detail={{
           purpose: "N/A",
           dependency: "N/A",
@@ -28,7 +29,11 @@ export function PlannedRoute({ routeId }: { routeId: string }) {
   return (
     <div className="flex flex-col gap-4">
       <Breadcrumbs items={route.breadcrumbs} />
-      <PlannedFeatureState title={route.label} detail={route.planned} />
+      {/* `titleAs="h1"`: esta tarjeta ES el contenido completo de la ruta, así
+          que su título es el encabezado de la página. Sin esto la página se
+          queda sin ningún `<h1>` desde que la barra superior dejó de aportar
+          uno (R0-E Fase 4). */}
+      <PlannedFeatureState title={route.label} detail={route.planned} titleAs="h1" />
     </div>
   );
 }
