@@ -7,6 +7,7 @@ import {
   ErrorState,
   InlineAlert,
   Button,
+  PageTitle,
 } from "@datatek/ui";
 import { FIXTURE_ORGANIZATIONS } from "@datatek/application";
 import { isVisibleToAudience } from "@datatek/application/commands";
@@ -205,7 +206,7 @@ export default async function LimitedAuthorizationPage({
     if (demoState === "context") {
       return (
         <div className="flex flex-col gap-4">
-          <h1 className="text-lg font-semibold">Tienes una solicitud de autorización</h1>
+          <PageTitle>Tienes una solicitud de autorización</PageTitle>
           <p className="text-sm text-[var(--color-muted-400)]">
             DTEK Servicios preparó una cotización para tu vehículo. No necesitas instalar una app.
             Este enlace permite revisar únicamente esta solicitud.
@@ -222,7 +223,7 @@ export default async function LimitedAuthorizationPage({
     if (demoState === "verification") {
       return (
         <div className="flex flex-col gap-4">
-          <h1 className="text-lg font-semibold">Verifiquemos que eres tú</h1>
+          <PageTitle>Verifiquemos que eres tú</PageTitle>
           <p className="text-sm text-[var(--color-muted-400)]">
             Este es un estado de ejemplo. R0-D no implementa un paso de código separado — el enlace
             seguro mismo es la verificación.
@@ -248,7 +249,7 @@ export default async function LimitedAuthorizationPage({
       return (
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <h1 className="text-lg font-semibold">Revisa la solicitud</h1>
+            <PageTitle>Revisa la solicitud</PageTitle>
             <Badge tone="neutral">DEMO DATA</Badge>
           </div>
           <InlineAlert
@@ -270,7 +271,7 @@ export default async function LimitedAuthorizationPage({
     if (demoState === "decision") {
       return (
         <div className="flex flex-col gap-4">
-          <h1 className="text-lg font-semibold">Tu decisión</h1>
+          <PageTitle>Tu decisión</PageTitle>
           <Card>
             <p className="text-sm text-[var(--color-muted-400)]">
               Este es un estado de ejemplo. Un enlace real muestra el formulario de decisión
@@ -290,7 +291,7 @@ export default async function LimitedAuthorizationPage({
     if (demoState === "confirmation") {
       return (
         <div className="flex flex-col gap-4">
-          <h1 className="text-lg font-semibold">Confirmación</h1>
+          <PageTitle>Confirmación</PageTitle>
           <p className="text-sm text-[var(--color-muted-400)]">
             Este es un estado de ejemplo. Ninguna decisión real fue enviada — un enlace real muestra
             esta pantalla justo después de un envío exitoso.
@@ -302,7 +303,7 @@ export default async function LimitedAuthorizationPage({
     // receipt
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-lg font-semibold">Constancia</h1>
+        <PageTitle>Constancia</PageTitle>
         <p className="text-sm text-[var(--color-muted-400)]">
           Vista de ejemplo de la constancia de decisión. Un enlace real ya decidido muestra la
           constancia con datos reales.
@@ -326,7 +327,7 @@ export default async function LimitedAuthorizationPage({
   if (view.kind === "receipt") {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-lg font-semibold">Constancia</h1>
+        <PageTitle>Constancia</PageTitle>
         <p className="text-sm text-[var(--color-muted-400)]">
           Ya se registró una decisión para esta solicitud.
         </p>
@@ -341,7 +342,7 @@ export default async function LimitedAuthorizationPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold">Revisa la solicitud</h1>
+      <PageTitle>Revisa la solicitud</PageTitle>
       <p className="text-sm text-[var(--color-muted-400)]">
         {view.orgLabel} preparó una cotización para tu vehículo (caso {view.caseCode}). No necesitas
         instalar una app ni crear una cuenta.

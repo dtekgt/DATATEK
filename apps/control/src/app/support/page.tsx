@@ -1,4 +1,4 @@
-import { AccessBoundary, Badge, Card, DateTimeText } from "@datatek/ui";
+import { AccessBoundary, Badge, Card, DateTimeText, PageTitle } from "@datatek/ui";
 import { FIXTURE_ORGANIZATIONS, FIXTURE_SUPPORT_ACCESS_SESSIONS } from "@datatek/application";
 import { getControlSession } from "../../lib/fixture-session";
 
@@ -17,7 +17,7 @@ export default async function SupportPage() {
             de cada sesión, lo que la hacía leerse como la bitácora real de
             accesos elevados. Ticket, razón y vencimiento son sembrados. */}
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold">Soporte — sesiones elevadas</h1>
+          <PageTitle>Soporte — sesiones elevadas</PageTitle>
           <Badge tone="neutral">DEMO DATA</Badge>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

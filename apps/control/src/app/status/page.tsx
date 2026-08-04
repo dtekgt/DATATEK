@@ -1,12 +1,12 @@
 import { getControlStatusViewModel } from "@datatek/application";
-import { AuditTimeline, Badge } from "@datatek/ui";
+import { AuditTimeline, Badge, PageTitle } from "@datatek/ui";
 
 export default function ControlStatusPage() {
   const vm = getControlStatusViewModel();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">Estado de plataforma</h1>
+        <PageTitle>Estado de plataforma</PageTitle>
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>
       <AuditTimeline

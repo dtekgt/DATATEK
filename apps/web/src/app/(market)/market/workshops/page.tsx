@@ -1,12 +1,12 @@
 import { getMarketWorkshopListViewModel } from "@datatek/application";
-import { Badge, Card, LinkButton } from "@datatek/ui";
+import { Badge, Card, LinkButton, PageTitle } from "@datatek/ui";
 
 export default function MarketWorkshopsPage() {
   const vm = getMarketWorkshopListViewModel();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">Talleres</h1>
+        <PageTitle>Talleres</PageTitle>
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>
       {vm.workshops.map((w) => (

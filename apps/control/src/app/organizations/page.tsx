@@ -1,4 +1,4 @@
-import { Badge, Card, LinkButton } from "@datatek/ui";
+import { Badge, Card, LinkButton, PageTitle } from "@datatek/ui";
 import { FIXTURE_ORGANIZATIONS } from "@datatek/application";
 
 // R0-C: Control's minimal organization list is metadata only (id, slug,
@@ -12,7 +12,7 @@ export default function OrganizationsPage() {
           poco se muestra), no su PROCEDENCIA. Son fixtures, y sin rótulo
           esta lista se lee como el censo real de tenants. */}
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-xl font-semibold">Organizaciones</h1>
+        <PageTitle>Organizaciones</PageTitle>
         <Badge tone="neutral">metadata de plataforma</Badge>
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>

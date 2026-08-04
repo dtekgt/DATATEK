@@ -1,6 +1,6 @@
+import { buildVehicleLabel, getProCaseExperience } from "@datatek/application/commands";
 import { getCaseListViewModel } from "@datatek/application";
-import { getProCaseExperience, buildVehicleLabel } from "@datatek/application/commands";
-import { Badge, DataTable, DateTimeText, LinkButton, StatusPill } from "@datatek/ui";
+import { Badge, DataTable, DateTimeText, LinkButton, PageTitle, StatusPill } from "@datatek/ui";
 import { getWebSession } from "../../../../../../lib/fixture-session";
 import { getCommandsEngine } from "../../../../../../lib/commands-engine";
 
@@ -61,7 +61,7 @@ export default async function ProCasesPage({ params }: { params: Promise<{ orgSl
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-semibold">Casos reales</h1>
+          <PageTitle>Casos reales</PageTitle>
           <Badge tone="success">Motor de comandos</Badge>
         </div>
         <DataTable

@@ -4,6 +4,7 @@ export * from "./utils/cn";
 export * from "./tokens/tokens";
 
 export * from "./primitives/text";
+export * from "./primitives/typography";
 export * from "./primitives/buttons";
 export * from "./primitives/form";
 export * from "./primitives/surfaces";

@@ -1,6 +1,6 @@
 import { getPassHomeViewModel } from "@datatek/application";
 import { getPassHome } from "@datatek/application/commands";
-import { Card, Badge, LinkButton, EmptyState } from "@datatek/ui";
+import { Badge, Card, EmptyState, LinkButton, PageTitle } from "@datatek/ui";
 import { getCommandsEngine } from "../../../../lib/commands-engine";
 import { resolvePassActor } from "../../../../lib/pass-actor";
 
@@ -24,7 +24,7 @@ export default async function GaragePage({
       return (
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">Garage</h1>
+            <PageTitle>Garage</PageTitle>
             <Badge tone="success">Motor de comandos</Badge>
           </div>
           {home.vehicles.map((v) => (
@@ -49,7 +49,7 @@ export default async function GaragePage({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">Garage</h1>
+        <PageTitle>Garage</PageTitle>
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>
       {home.vehicles.map((v) => (

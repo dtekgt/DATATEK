@@ -1,12 +1,12 @@
 import { getMarketWorkshopListViewModel } from "@datatek/application";
-import { Badge, Card, LinkButton, PricingBasisBadge } from "@datatek/ui";
+import { Badge, Card, LinkButton, PageTitle, PricingBasisBadge } from "@datatek/ui";
 
 export default function MarketHomePage() {
   const vm = getMarketWorkshopListViewModel();
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">Encuentra un taller</h1>
+        <PageTitle>Encuentra un taller</PageTitle>
         <p className="mt-1 text-sm text-[var(--color-muted-400)]">{vm.seedDisclaimer}</p>
       </div>
       <Badge tone="neutral" className="self-start">

@@ -118,8 +118,16 @@ export function PlannedFeatureState({ title, detail, titleAs = "p" }: PlannedFea
     <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-dashed border-white/15 p-6">
       <div className="flex items-center gap-2">
         <Clock3 className="h-5 w-5 text-[var(--color-info-400)]" aria-hidden />
-        <Title className="text-base font-medium">{title}</Title>
-        <span className="ml-auto rounded-full border border-white/20 px-2 py-0.5 text-xs uppercase tracking-wide text-[var(--color-muted-400)]">
+        <Title
+          className={cn(
+            titleAs === "h1"
+              ? "text-[clamp(22px,3vw,30px)] leading-[0.95] font-[300] tracking-[-0.055em]"
+              : "text-[18px] font-[400] tracking-[-0.03em]",
+          )}
+        >
+          {title}
+        </Title>
+        <span className="ml-auto rounded-full border border-[var(--line-strong)] px-3 py-1 text-[11px] font-[550] tracking-[0.12em] text-[var(--color-muted-400)] uppercase">
           Planificado · {detail.release}
         </span>
       </div>

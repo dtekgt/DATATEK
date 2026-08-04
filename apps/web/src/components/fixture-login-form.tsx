@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { Button, Card } from "@datatek/ui";
+import { Button, Card, PageTitle } from "@datatek/ui";
 import {
   SESSION_COOKIE_NAME,
   FIXTURE_ACTOR_OPTIONS,
@@ -57,7 +57,7 @@ export function FixtureLoginForm() {
   return (
     <div className="mx-auto flex max-w-sm flex-col gap-4 p-6">
       <div>
-        <h1 className="text-lg font-semibold">Entrar a Datatek Pro (fixture)</h1>
+        <PageTitle>Entrar a Datatek Pro (fixture)</PageTitle>
         <p className="mt-1 text-sm text-[var(--color-muted-400)]">
           R0-C: sin Supabase Auth local disponible en este entorno, elige un actor sembrado. Ningún
           dato de esta pantalla es una contraseña real.

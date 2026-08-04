@@ -1,4 +1,4 @@
-import { AccessBoundary, Badge, Card, DateTimeText } from "@datatek/ui";
+import { AccessBoundary, Badge, Card, DateTimeText, PageTitle } from "@datatek/ui";
 import { FIXTURE_ORGANIZATIONS } from "@datatek/application";
 import { getControlTenantAccess } from "../../../lib/fixture-session";
 
@@ -33,7 +33,7 @@ export default async function OrganizationDetailPage({
             elevado sin rotular es precisamente lo que una auditoría
             no debe poder confundir con la bitácora real. */}
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold">{org.label}</h1>
+          <PageTitle>{org.label}</PageTitle>
           <Badge tone="warning">sesión elevada activa</Badge>
           <Badge tone="neutral">DEMO DATA</Badge>
         </div>

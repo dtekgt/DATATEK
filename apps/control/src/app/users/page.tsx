@@ -1,4 +1,4 @@
-import { AccessBoundary, Badge, DataTable } from "@datatek/ui";
+import { AccessBoundary, Badge, DataTable, PageTitle } from "@datatek/ui";
 import { FIXTURE_PLATFORM_ACTOR_OPTIONS } from "../../lib/fixture-session";
 import { getControlSession } from "../../lib/fixture-session";
 
@@ -15,7 +15,7 @@ export default async function UsersPage() {
             Control" es exactamente el tipo de dato que nadie debería
             confundir con el real. */}
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold">Usuarios de plataforma</h1>
+          <PageTitle>Usuarios de plataforma</PageTitle>
           <Badge tone="neutral">independiente de membership de organización</Badge>
           <Badge tone="neutral">DEMO DATA</Badge>
         </div>

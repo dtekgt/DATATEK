@@ -1,5 +1,5 @@
 import { getMarketWorkshopListViewModel } from "@datatek/application";
-import { Badge, Card, EmptyState, PricingBasisBadge } from "@datatek/ui";
+import { Badge, Card, EmptyState, PageTitle, PricingBasisBadge } from "@datatek/ui";
 
 export default async function MarketWorkshopDetailPage({
   params,
@@ -22,7 +22,7 @@ export default async function MarketWorkshopDetailPage({
           lista de servicios con su base de precio — lo más fácil de tomar
           por una publicación real. */}
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-xl font-semibold">{workshop.name}</h1>
+        <PageTitle>{workshop.name}</PageTitle>
         {workshop.founderBadge ? <Badge tone="brand">Taller fundador</Badge> : null}
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>

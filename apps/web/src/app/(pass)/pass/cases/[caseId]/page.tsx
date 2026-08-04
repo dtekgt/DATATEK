@@ -1,6 +1,6 @@
+import { getCaseProofSummary, getPassCase } from "@datatek/application/commands";
 import { getPassCaseViewModel } from "@datatek/application";
-import { getPassCase, getCaseProofSummary } from "@datatek/application/commands";
-import { Badge, CaseProofSummary } from "@datatek/ui";
+import { Badge, CaseProofSummary, PageTitle } from "@datatek/ui";
 import type { CaseProofSummaryViewModel } from "@datatek/application";
 import { getCommandsEngine } from "../../../../../lib/commands-engine";
 
@@ -36,7 +36,7 @@ export default async function PassCaseDetailPage({
       return (
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">{caseVm.code}</h1>
+            <PageTitle>{caseVm.code}</PageTitle>
             <Badge tone="success">Motor de comandos</Badge>
           </div>
           <p className="text-sm text-[var(--color-muted-400)]">{caseVm.vehicleLabel}</p>
@@ -75,7 +75,7 @@ export default async function PassCaseDetailPage({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">{caseVm.code}</h1>
+        <PageTitle>{caseVm.code}</PageTitle>
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>
       <p className="text-sm text-[var(--color-muted-400)]">{caseVm.vehicleLabel}</p>

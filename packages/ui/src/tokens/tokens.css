@@ -1,6 +1,13 @@
 /* Datatek design tokens — R0-B sección 5. Single source of truth for color,
-   spacing, radii and motion. Consumed by apps/web and apps/control. */
-@theme {
+   spacing, radii and motion. Consumed by apps/web and apps/control.
+
+   `static` es obligatorio, no decorativo. Por defecto Tailwind v4 hace
+   tree-shaking de las variables de `@theme`: sólo emite a `:root` las que ve
+   consumidas por una utilidad generada. Los tokens que se leen con `var()`
+   dentro de un valor arbitrario, o desde un `style` en línea, no cuentan como
+   uso — así que desaparecían silenciosamente y `var(--radius-card)` resolvía
+   a nada. Las tarjetas llevaban esquinas cuadradas por eso. */
+@theme static {
   /* Color — ADN: negro/grafito profundo, rojo luz trasera, alto contraste. */
   --color-ink-950: #030405;
   --color-ink-900: #080a0d;
@@ -18,17 +25,48 @@
   /* Spacing — 4px scale. */
   --spacing: 0.25rem;
 
-  /* Radii — 10 inputs / 14 controls / 20 cards / 28 hero only. */
-  --radius-input: 10px;
-  --radius-control: 14px;
-  --radius-card: 20px;
-  --radius-hero: 28px;
+  /* Radii — design system D-TEK: todo es cápsula o rectángulo suave. La regla
+     de marca es explícita: "ningún ángulo pequeño o duro en ningún lado".
+     `--radius-control` es cápsula porque botones, chips, pestañas y píldoras
+     son controles; las superficies usan `card`/`hero`. */
+  --radius-pill: 999px;
+  --radius-xs: 14px;
+  --radius-input: 18px;
+  --radius-control: 999px;
+  --radius-card: 24px;
+  --radius-hero: 30px;
 
-  /* Motion — 160–280ms, respects reduced motion. */
-  --duration-fast: 160ms;
-  --duration-base: 220ms;
-  --duration-slow: 280ms;
-  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  /* Alturas de control. El design system define sm=40px, pero R0-E verificó
+     objetivos táctiles de 44px (WCAG 2.2 AA, criterio 2.5.8) y esa medición
+     no se baja para calzar un número: sm queda en 44. */
+  --control-h-sm: 44px;
+  --control-h: 48px;
+  --control-h-lg: 52px;
+
+  /* Motion — curva única de desaceleración de la marca, sin rebotes.
+     Respeta reduced motion (ver más abajo). */
+  --duration-fast: 180ms;
+  --duration-base: 350ms;
+  --duration-slow: 800ms;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Efectos — hairline casi blanca, sombra ambiente suave y el acento LED. */
+  --line-hairline: rgba(255, 255, 255, 0.11);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --shadow-card: 0 28px 80px rgba(0, 0, 0, 0.38);
+  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.26);
+  --glow-accent: 0 0 20px rgba(227, 32, 37, 0.55);
+  --surface-card-gradient: linear-gradient(150deg, rgba(17, 20, 26, 0.94), rgba(7, 8, 11, 0.91));
+
+  /* Tipografía — displays en peso 300 con tracking negativo; etiquetas al
+     revés: diminutas, semibold, mayúsculas y muy espaciadas. */
+  --weight-display: 300;
+  --weight-semibold: 550;
+  --tracking-display: -0.065em;
+  --tracking-heading: -0.055em;
+  --tracking-label: 0.12em;
+  --leading-display: 0.88;
+  --leading-heading: 0.95;
 
   /* Typography */
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -73,8 +111,59 @@ body {
   min-width: 44px;
 }
 
+/* El foco de la marca es un anillo rojo con halo, no un contorno plano. Se
+   conserva `outline` además del halo porque el halo es `box-shadow` y
+   desaparece en modo de alto contraste forzado; el outline es lo que
+   garantiza WCAG 2.4.7 ahí. `inherit` respeta el radio de cada control en
+   lugar de imponer uno. */
 .focus-ring:focus-visible {
   outline: 2px solid var(--color-brand-400);
   outline-offset: 2px;
-  border-radius: var(--radius-control);
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 3px rgba(227, 32, 37, 0.12),
+    0 0 22px rgba(227, 32, 37, 0.1);
+}
+
+/* Checkbox de marca. Va en CSS plano y no en utilidades: el estado marcado
+   necesita un SVG en data URI, y meter uno —con sus espacios y comillas— por
+   el parser de valores arbitrarios de Tailwind es pelearse con la herramienta
+   para conseguir un resultado peor y menos legible.
+
+   `appearance:none` es lo que permite pintarlo: sin eso el navegador dibuja
+   el control nativo y cualquier borde o fondo se ignora. */
+.checkbox-brand {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.035);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 15px 15px;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.checkbox-brand:checked {
+  border-color: transparent;
+  background-color: var(--color-brand-500);
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-6'/%3E%3C/svg%3E");
+}
+
+.checkbox-brand:hover:not(:checked) {
+  border-color: var(--color-brand-500);
+}
+
+/* Kicker: la micro-etiqueta en mayúsculas que abre cada bloque de la marca. */
+.kicker {
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-muted-400);
 }

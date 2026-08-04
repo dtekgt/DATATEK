@@ -2,6 +2,7 @@ import type { CaseWorkspaceViewModel } from "@datatek/application";
 import type { CaseBlocker, OperationalNextAction, StageRailStage } from "@datatek/application";
 import { Badge, Card } from "../primitives/surfaces";
 import { DateTimeText, MoneyText } from "../primitives/text";
+import { Kicker, PageTitle } from "../primitives/typography";
 import { cn } from "../utils/cn";
 
 export interface CaseHeaderProps {
@@ -16,9 +17,9 @@ export function CaseHeader({ code, customerName, vehicleLabel, friendlyStatus }:
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div>
-        <p className="text-xs uppercase tracking-wide text-[var(--color-muted-400)]">{code}</p>
-        <h1 className="text-lg font-semibold">{customerName}</h1>
-        <p className="text-sm text-[var(--color-muted-400)]">{vehicleLabel}</p>
+        <Kicker>{code}</Kicker>
+        <PageTitle className="mt-1">{customerName}</PageTitle>
+        <p className="mt-1 text-sm text-[var(--color-muted-400)]">{vehicleLabel}</p>
       </div>
       <Badge tone="info" className="ml-auto">
         {friendlyStatus}

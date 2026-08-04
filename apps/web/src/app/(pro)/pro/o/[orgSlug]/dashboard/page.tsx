@@ -1,5 +1,13 @@
 import { getDashboardViewModel } from "@datatek/application";
-import { Badge, Card, DataTable, DateTimeText, StatusPill, LinkButton } from "@datatek/ui";
+import {
+  Badge,
+  Card,
+  DataTable,
+  DateTimeText,
+  LinkButton,
+  PageTitle,
+  StatusPill,
+} from "@datatek/ui";
 
 export default async function ProDashboardPage({
   params,
@@ -12,7 +20,7 @@ export default async function ProDashboardPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">{vm.organizationName}</h1>
+        <PageTitle>{vm.organizationName}</PageTitle>
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

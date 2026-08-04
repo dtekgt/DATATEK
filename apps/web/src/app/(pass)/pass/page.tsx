@@ -19,6 +19,7 @@ import {
   Badge,
   Card,
   LinkButton,
+  PageTitle,
 } from "@datatek/ui";
 import { getCommandsEngine } from "../../../lib/commands-engine";
 import { resolvePassActor } from "../../../lib/pass-actor";
@@ -49,7 +50,7 @@ export default async function PassHomePage({
       return (
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">Hola, {home.customerFirstName}</h1>
+            <PageTitle>Hola, {home.customerFirstName}</PageTitle>
             <Badge tone="success">Motor de comandos</Badge>
           </div>
 
@@ -94,7 +95,7 @@ export default async function PassHomePage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">Hola, {home.customerFirstName}</h1>
+        <PageTitle>Hola, {home.customerFirstName}</PageTitle>
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>
 

@@ -1,2 +1,9 @@
 @import "tailwindcss";
 @import "@datatek/ui/tokens.css";
+
+/* Tailwind v4 detecta contenido automáticamente desde este archivo hacia
+   arriba, pero omite `node_modules` — y `@datatek/ui` vive ahí como enlace del
+   workspace. Sin esta línea, ninguna clase escrita dentro de `packages/ui` se
+   genera: los componentes salían con el atributo `class` correcto y sin CSS
+   detrás. Se apunta a la fuente real, no al enlace. */
+@source "../../../../packages/ui/src";

@@ -11,8 +11,11 @@ const fieldWrap = "flex flex-col gap-1.5";
 const label = "text-sm font-medium text-[var(--color-paper-50)]";
 const help = "text-xs text-[var(--color-muted-400)]";
 const errorText = "text-xs text-[var(--color-danger-400)]";
+// Rectángulo suave de 18px, no cápsula: un campo de texto en cápsula obliga a
+// un padding lateral enorme y empuja el cursor lejos del borde. La marca
+// reserva la cápsula para controles de acción.
 const controlBase =
-  "tap-target focus-ring w-full rounded-[var(--radius-input)] border border-white/12 bg-[var(--color-surface-800)] px-3 text-sm text-[var(--color-paper-50)] placeholder:text-[var(--color-muted-400)] disabled:opacity-50";
+  "tap-target focus-ring min-h-[var(--control-h)] w-full rounded-[var(--radius-input)] border border-[var(--line-hairline)] bg-white/[0.035] px-4 text-sm text-[var(--color-paper-50)] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-standard)] placeholder:text-[var(--color-muted-400)] hover:border-[var(--line-strong)] disabled:opacity-50";
 
 interface FieldChromeProps {
   id: string;
@@ -119,7 +122,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
           id={fieldId}
           className={cn(
             controlBase,
-            "min-h-24 py-2",
+            // `controlBase` ya trae `min-h-[var(--control-h)]`; dejar también
+            // `min-h-24` hacía que dos reglas de la misma especificidad
+            // compitieran por orden de emisión. Se fija la altura aquí.
+            "!min-h-32 py-3 leading-relaxed",
             error && "border-[var(--color-danger-400)]",
             className,
           )}
@@ -196,15 +202,18 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
   const autoId = useId();
   const fieldId = id ?? autoId;
   return (
-    <div className="flex items-center gap-2">
+    // El objetivo táctil de 44px vive en la fila, no en la caja. Antes el
+    // input llevaba `tap-target` con `h-5`: el navegador estiraba el control
+    // NATIVO a 44px y lo pintaba con el azul del sistema, porque sin
+    // `appearance-none` las clases de borde y fondo no tienen efecto sobre un
+    // checkbox nativo. Hacer clic en la etiqueta ya alterna el input, así que
+    // la fila entera es el área de toque y la caja puede medir 22px.
+    <div className="flex min-h-11 items-center gap-3">
       <input
         ref={ref}
         type="checkbox"
         id={fieldId}
-        className={cn(
-          "tap-target focus-ring h-5 w-5 rounded-[4px] border border-white/20 bg-[var(--color-surface-800)]",
-          className,
-        )}
+        className={cn("checkbox-brand focus-ring", className)}
         {...props}
       />
       <label htmlFor={fieldId} className="text-sm">

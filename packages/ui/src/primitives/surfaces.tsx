@@ -10,15 +10,45 @@ export function Surface({ className, ...props }: HTMLAttributes<HTMLDivElement>)
   );
 }
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /** Riel de acento LED sobre el borde izquierdo. El design system lo usa con
+   * moderación — uno o dos por superficie, nunca como patrón repetido — así
+   * que es opt-in y por defecto no aparece. */
+  accent?: "none" | "brand" | "success" | "warning" | "danger";
+}
+
+const accentRail: Record<Exclude<NonNullable<CardProps["accent"]>, "none">, string> = {
+  brand: "var(--color-brand-400)",
+  success: "var(--color-success-400)",
+  warning: "var(--color-warning-400)",
+  danger: "var(--color-danger-400)",
+};
+
+export function Card({ accent = "none", className, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-card)] border border-white/8 bg-[var(--color-surface-800)] p-5 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset]",
+        // Las pistas de tipo `image:` y `shadow:` no son opcionales: ante
+        // `bg-[var(--x)]` Tailwind asume color y produce
+        // `background-color: linear-gradient(...)`, que es inválido y se
+        // descarta en silencio. Lo mismo con la sombra.
+        "relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--line-hairline)] bg-[image:var(--surface-card-gradient)] p-6 shadow-[shadow:var(--shadow-card)]",
         className,
       )}
       {...props}
-    />
+    >
+      {accent !== "none" ? (
+        <span
+          aria-hidden
+          className="absolute top-5 bottom-5 left-0 w-[3px] rounded-full"
+          style={{
+            background: accentRail[accent],
+            boxShadow: `0 0 16px ${accentRail[accent]}`,
+          }}
+        />
+      ) : null}
+      {children}
+    </div>
   );
 }
 
@@ -26,7 +56,7 @@ export function Panel({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-control)] border border-white/8 bg-[var(--color-surface-700)] p-4",
+        "rounded-[var(--radius-input)] border border-[var(--line-hairline)] bg-white/[0.045] p-4",
         className,
       )}
       {...props}
@@ -35,7 +65,7 @@ export function Panel({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 export function Divider({ className, ...props }: HTMLAttributes<HTMLHRElement>) {
-  return <hr className={cn("border-t border-white/8", className)} {...props} />;
+  return <hr className={cn("border-t border-[var(--line-hairline)]", className)} {...props} />;
 }
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
@@ -124,7 +154,9 @@ export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>
   return (
     <div
       aria-hidden
-      className={cn("animate-pulse rounded-[var(--radius-control)] bg-white/8", className)}
+      // `--radius-control` es cápsula desde el cambio de marca; un esqueleto
+      // con radio 999px se lee como píldora y miente sobre lo que va a cargar.
+      className={cn("animate-pulse rounded-[var(--radius-input)] bg-white/8", className)}
       {...props}
     />
   );

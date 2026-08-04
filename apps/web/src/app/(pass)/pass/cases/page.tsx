@@ -1,6 +1,6 @@
-import { getPassCaseViewModel, DEMO_CASE_ID } from "@datatek/application";
+import { DEMO_CASE_ID, getPassCaseViewModel } from "@datatek/application";
 import { getPassCase } from "@datatek/application/commands";
-import { Card, Badge, LinkButton } from "@datatek/ui";
+import { Badge, Card, LinkButton, PageTitle } from "@datatek/ui";
 import { getCommandsEngine } from "../../../../lib/commands-engine";
 import { resolvePassActor } from "../../../../lib/pass-actor";
 
@@ -47,7 +47,7 @@ export default async function PassCasesPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-semibold">Tus casos</h1>
+          <PageTitle>Tus casos</PageTitle>
           <Badge tone="success">Motor de comandos</Badge>
         </div>
         {realCases.length === 0 ? (

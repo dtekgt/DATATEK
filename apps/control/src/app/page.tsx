@@ -1,12 +1,12 @@
 import { getControlStatusViewModel } from "@datatek/application";
-import { Badge, Card, DateTimeText } from "@datatek/ui";
+import { Badge, Card, DateTimeText, PageTitle } from "@datatek/ui";
 
 export default function ControlHomePage() {
   const vm = getControlStatusViewModel();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">Estado general</h1>
+        <PageTitle>Estado general</PageTitle>
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>
       <p className="text-sm text-[var(--color-muted-400)]">

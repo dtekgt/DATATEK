@@ -1,2 +1,7 @@
 @import "tailwindcss";
 @import "@datatek/ui/tokens.css";
+
+/* Ver la nota en apps/web/src/app/globals.css: Tailwind v4 no escanea
+   `node_modules`, así que las clases escritas dentro de `packages/ui` no se
+   generaban y los componentes quedaban sin CSS. */
+@source "../../../../packages/ui/src";

@@ -6,6 +6,7 @@ import {
   MaintenanceRadar,
   InspectionChecklist,
   Badge,
+  PageTitle,
 } from "@datatek/ui";
 
 export default async function VehiclePassportPage({
@@ -20,7 +21,7 @@ export default async function VehiclePassportPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-2">
-        <h1 className="text-xl font-semibold">Pasaporte del vehículo</h1>
+        <PageTitle>Pasaporte del vehículo</PageTitle>
         <Badge tone="neutral">DEMO DATA</Badge>
       </div>
       <VehicleIdentityCard
