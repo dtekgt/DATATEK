@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { Button, Card, PageTitle } from "@datatek/ui";
+import { Badge, Button, Card, PageTitle, Select } from "@datatek/ui";
 import {
   SESSION_COOKIE_NAME,
   FIXTURE_ACTOR_OPTIONS,
@@ -57,35 +57,32 @@ export function FixtureLoginForm() {
   return (
     <div className="mx-auto flex max-w-sm flex-col gap-4 p-6">
       <div>
-        <PageTitle>Entrar a Datatek Pro (fixture)</PageTitle>
-        <p className="mt-1 text-sm text-[var(--color-muted-400)]">
-          R0-C: sin Supabase Auth local disponible en este entorno, elige un actor sembrado. Ningún
-          dato de esta pantalla es una contraseña real.
+        <Badge tone="brand">PRO · SOLO PERSONAL DEL TALLER</Badge>
+        <PageTitle className="mt-3">Entrada de demostración</PageTitle>
+        <p className="mt-2 text-sm text-[var(--color-muted-400)]">
+          Elige un rol ficticio para recorrer la operación del taller. Esto no es una cuenta real y
+          no da acceso a vehículos de clientes fuera de la demostración.
         </p>
       </div>
       <Card>
         <form action={loginAction} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-1 text-sm">
-            <span>Actor</span>
-            <select name="actorId" className="rounded border border-white/10 bg-transparent p-2">
-              {FIXTURE_ACTOR_OPTIONS.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span>Organización de entrada</span>
-            <select name="orgSlug" className="rounded border border-white/10 bg-transparent p-2">
-              {FIXTURE_ORGANIZATIONS.map((o) => (
-                <option key={o.id} value={o.slug}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Button type="submit">Entrar</Button>
+          <Select
+            name="actorId"
+            label="Rol de demostración"
+            options={FIXTURE_ACTOR_OPTIONS.map((actor) => ({
+              value: actor.id,
+              label: actor.label,
+            }))}
+          />
+          <Select
+            name="orgSlug"
+            label="Taller"
+            options={FIXTURE_ORGANIZATIONS.map((organization) => ({
+              value: organization.slug,
+              label: organization.label,
+            }))}
+          />
+          <Button type="submit">Entrar al espacio del taller</Button>
         </form>
       </Card>
     </div>

@@ -21,6 +21,7 @@ export * from "./src/commands/agenda-commands.ts";
 export * from "./src/commands/inspection-commands.ts";
 export * from "./src/commands/quote-commands.ts";
 export * from "./src/commands/authorization-commands.ts";
+export * from "./src/commands/open-case-journey.ts";
 export * from "./src/commands/engine.ts";
 export * from "./src/commands/fixtures.ts";
 

@@ -34,7 +34,12 @@ export function PassShell({ activeRouteId, children, vehicleRail }: PassShellPro
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col pb-24">
       <header className="flex items-center gap-2 px-4 py-4">
-        <span className="text-sm font-bold tracking-[0.12em]">DATATEK PASS</span>
+        <div>
+          <span className="text-sm font-bold tracking-[0.12em]">DATATEK PASS</span>
+          <p className="mt-0.5 text-[11px] text-[var(--color-muted-400)]">
+            Tu vehículo · no el panel del taller
+          </p>
+        </div>
       </header>
       {vehicleRail ? (
         <div className="sticky top-0 z-20 bg-[var(--surface-app)]/95 px-4 py-2 backdrop-blur">

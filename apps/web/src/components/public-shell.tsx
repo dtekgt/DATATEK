@@ -15,6 +15,11 @@ export function PublicShell({ children }: { children: ReactNode }) {
   ]);
   const primaryRoutes = routes.filter((route) => primaryIds.has(route.id));
   const secondaryRoutes = routes.filter((route) => !primaryIds.has(route.id));
+  const publicLabels: Record<string, string> = {
+    "public.pro": "Para talleres",
+    "public.pass": "Para conductores",
+    "public.market": "Market",
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -37,13 +42,13 @@ export function PublicShell({ children }: { children: ReactNode }) {
                   className="focus-ring inline-flex min-h-10 items-center gap-1.5 rounded-[var(--radius-control)] px-3 text-[var(--color-muted-400)] transition-colors hover:bg-white/5 hover:text-[var(--color-paper-50)]"
                 >
                   <RouteIcon name={r.icon} className="h-4 w-4" />
-                  {r.label}
+                  {publicLabels[r.id] ?? r.label}
                 </a>
               </li>
             ))}
           </ul>
-          <LinkButton href="/pass" size="sm" className="ml-auto hidden md:inline-flex">
-            Ver la experiencia
+          <LinkButton href="/#elige-tu-espacio" size="sm" className="ml-auto hidden md:inline-flex">
+            Elegir mi acceso
           </LinkButton>
 
           <details className="relative ml-auto md:hidden">
@@ -59,7 +64,7 @@ export function PublicShell({ children }: { children: ReactNode }) {
                   className="focus-ring flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] px-3 text-sm text-[var(--color-muted-400)] hover:bg-white/5 hover:text-white"
                 >
                   <RouteIcon name={route.icon} className="h-4 w-4" />
-                  {route.label}
+                  {publicLabels[route.id] ?? route.label}
                 </a>
               ))}
             </div>

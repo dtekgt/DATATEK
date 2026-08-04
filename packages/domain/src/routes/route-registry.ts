@@ -299,13 +299,6 @@ const proRoutes: RouteEntry[] = [
     telemetry: "pro.customers.view",
     emptyState: "Sin clientes registrados.",
     breadcrumbs: ["Pro", "Clientes"],
-    planned: {
-      purpose: "Listar clientes locales de la organización, con o sin cuenta vinculada.",
-      dependency: R0C,
-      release: "r0-c",
-      dataToBeUsed: "Registros `customers` y `customer_auth_links` por organización.",
-      whyDisabled: "Requiere aislamiento multiempresa real.",
-    },
   },
   {
     id: "pro.customer-detail",
@@ -320,13 +313,6 @@ const proRoutes: RouteEntry[] = [
     telemetry: "pro.customer.view",
     emptyState: "Este cliente no tiene historial todavía.",
     breadcrumbs: ["Pro", "Clientes", "Cliente"],
-    planned: {
-      purpose: "Perfil local del cliente: vehículos, casos y relación con la organización.",
-      dependency: R0C,
-      release: "r0-c",
-      dataToBeUsed: "Relación local, vehículos vinculados y casos.",
-      whyDisabled: "Requiere aislamiento multiempresa real.",
-    },
   },
   {
     id: "pro.vehicles",
@@ -341,14 +327,6 @@ const proRoutes: RouteEntry[] = [
     telemetry: "pro.vehicles.view",
     emptyState: "Sin vehículos con acceso concedido.",
     breadcrumbs: ["Pro", "Vehículos"],
-    planned: {
-      purpose:
-        "Vehículos con caso o acceso concedido a esta organización, nunca enumeración libre.",
-      dependency: R0C,
-      release: "r0-c",
-      dataToBeUsed: "Accesos y casos que vinculan vehículo con la organización.",
-      whyDisabled: "Un vehículo no es enumerable desde el cliente sin acceso explícito.",
-    },
   },
   {
     id: "pro.vehicle-detail",
@@ -363,13 +341,6 @@ const proRoutes: RouteEntry[] = [
     telemetry: "pro.vehicle.view",
     emptyState: "Sin historial verificable todavía.",
     breadcrumbs: ["Pro", "Vehículos", "Vehículo"],
-    planned: {
-      purpose: "Pasaporte técnico del vehículo dentro del alcance autorizado de la organización.",
-      dependency: R0C,
-      release: "r0-c",
-      dataToBeUsed: "Historial verificable, odómetro y evidencia visible por caso.",
-      whyDisabled: "Requiere resolución de acceso por caso, relación o grant explícito.",
-    },
   },
   {
     id: "pro.parts",

@@ -10,18 +10,20 @@ const promises = [
 const products = [
   {
     name: "Datatek Pro",
-    audience: "Para el taller",
+    audience: "TRABAJO EN UN TALLER",
     description:
-      "Casos, agenda, inspección, evidencia y cotizaciones en una sola operación. Cada caso muestra qué sigue y quién debe hacerlo.",
+      "El espacio privado donde el equipo abre casos, registra hallazgos, cotiza y solicita decisiones.",
+    boundary: "Puede operar el trabajo. No es la cuenta del conductor.",
     href: "/pro",
     icon: Wrench,
     accent: "brand" as const,
   },
   {
     name: "Datatek Pass",
-    audience: "Para el conductor",
+    audience: "QUIERO VER MI VEHÍCULO",
     description:
-      "El estado del vehículo explicado sin lenguaje enredado, decisiones pendientes a la vista y un historial que no se pierde.",
+      "El espacio personal donde el conductor entiende hallazgos, revisa lo que debe decidir y conserva su historial.",
+    boundary: "Puede revisar y decidir. No puede operar el taller.",
     href: "/pass",
     icon: CarFront,
     accent: "info" as const,
@@ -31,6 +33,7 @@ const products = [
     audience: "Para conectar",
     description:
       "Descubre talleres y servicios con precios que siempre explican si son fijos, desde, por rango o sujetos a diagnóstico.",
+    boundary: "Conecta a las partes. No mezcla sus accesos privados.",
     href: "/market",
     icon: Search,
     accent: "success" as const,
@@ -49,22 +52,21 @@ export default function HomePage() {
     <div className="flex flex-col gap-20 md:gap-28">
       <section className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr]">
         <div>
-          <Kicker className="text-[var(--color-brand-400)]">
-            Infraestructura de confianza automotriz
-          </Kicker>
+          <Kicker className="text-[var(--color-brand-400)]">Dos accesos · una misma verdad</Kicker>
           <Display as="h1" className="mt-4 max-w-3xl">
-            Tu taller opera. Tu cliente entiende. Cada decisión queda respaldada.
+            El taller trabaja en Pro. El conductor revisa su vehículo en Pass.
           </Display>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-[var(--color-muted-400)] md:text-lg">
-            Datatek une la operación del taller con la experiencia del conductor. Desde el primer
-            mensaje hasta la autorización, ambos ven la misma verdad — explicada para cada uno.
+            Son espacios separados. Pro contiene las herramientas y datos internos del taller; Pass
+            recibe únicamente la información que corresponde al cliente. Una persona puede tener
+            ambos permisos sin que los datos se mezclen.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <LinkButton href="/pro" variant="primary" size="lg">
-              Conocer Datatek Pro <ArrowRight className="h-4 w-4" aria-hidden />
+            <LinkButton href="#elige-tu-espacio" variant="primary" size="lg">
+              Elegir mi acceso <ArrowRight className="h-4 w-4" aria-hidden />
             </LinkButton>
-            <LinkButton href="/pass" size="lg">
-              Ver Datatek Pass
+            <LinkButton href="/trust" size="lg">
+              Cómo se separan los datos
             </LinkButton>
           </div>
           <ul className="mt-8 grid gap-3 text-sm text-[var(--color-muted-400)] sm:grid-cols-3">
@@ -80,64 +82,59 @@ export default function HomePage() {
           </ul>
         </div>
 
-        <Card className="relative p-5 md:p-6" accent="brand">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold tracking-[0.12em] text-[var(--color-muted-400)] uppercase">
-                Caso DTEK-2026-0142
-              </p>
-              <p className="mt-2 text-xl font-semibold">Toyota Corolla 2018</p>
-              <p className="text-sm text-[var(--color-muted-400)]">Frenos delanteros · P-123ABC</p>
-            </div>
-            <Badge tone="warning">Esperando autorización</Badge>
-          </div>
-
-          <div className="mt-6 rounded-[var(--radius-control)] bg-[var(--surface-well)] p-4 shadow-[var(--neu-inset)]">
-            <p className="text-xs font-semibold tracking-[0.12em] text-[var(--color-muted-400)] uppercase">
-              Lo importante ahora
-            </p>
-            <p className="mt-2 font-medium">Desgaste crítico en pastillas delanteras</p>
-            <p className="mt-1 text-sm leading-relaxed text-[var(--color-muted-400)]">
-              La inspección registró 2.1 mm. El taller recomienda reemplazarlas antes de continuar
-              usando el vehículo con normalidad.
-            </p>
-          </div>
-
-          <div className="mt-5 grid grid-cols-4 gap-2" aria-label="Progreso del caso">
-            {["Recibido", "Revisado", "Cotizado", "Decisión"].map((step, index) => (
-              <div key={step} className="min-w-0">
-                <span
-                  className={`block h-1.5 rounded-full ${
-                    index < 3 ? "bg-[var(--color-brand-500)]" : "bg-white/10"
-                  }`}
-                />
-                <span className="mt-2 block truncate text-[10px] text-[var(--color-muted-400)]">
-                  {step}
-                </span>
+        <Card className="relative flex flex-col gap-3 p-4 md:p-5" accent="brand">
+          <div className="rounded-[var(--radius-control)] bg-[var(--surface-well)] p-5 shadow-[var(--neu-inset)]">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-brand-500)]/15 text-[var(--color-brand-400)]">
+                <Wrench className="h-5 w-5" aria-hidden />
+              </span>
+              <div>
+                <Badge tone="brand">DATATEK PRO</Badge>
+                <p className="mt-2 font-semibold">Acceso del taller</p>
               </div>
-            ))}
+            </div>
+            <p className="mt-4 text-sm text-[var(--color-muted-400)]">
+              Abrir caso → inspeccionar → cotizar → solicitar autorización.
+            </p>
+            <p className="mt-2 text-xs text-[var(--color-muted-400)]">
+              Incluye notas y controles internos que el cliente nunca recibe.
+            </p>
           </div>
 
-          <div className="mt-6 flex items-end justify-between gap-4 border-t border-white/8 pt-5">
-            <div>
-              <p className="text-xs text-[var(--color-muted-400)]">Cotización congelada</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums">Q 1,600.00</p>
+          <div className="flex items-center gap-3 px-3 py-1 text-xs text-[var(--color-muted-400)]">
+            <span className="h-px flex-1 bg-white/10" />
+            SOLO CRUZA INFORMACIÓN APROBADA PARA EL CLIENTE
+            <span className="h-px flex-1 bg-white/10" />
+          </div>
+
+          <div className="rounded-[var(--radius-control)] border border-[var(--color-info-400)]/20 p-5">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-info-400)]/15 text-[var(--color-info-400)]">
+                <CarFront className="h-5 w-5" aria-hidden />
+              </span>
+              <div>
+                <Badge tone="info">DATATEK PASS</Badge>
+                <p className="mt-2 font-semibold">Acceso del conductor</p>
+              </div>
             </div>
-            <span className="rounded-[var(--radius-control)] bg-[var(--color-brand-500)] px-4 py-3 text-sm font-semibold text-white shadow-[var(--neu-raised-sm)]">
-              Revisar y decidir
-            </span>
+            <p className="mt-4 text-sm text-[var(--color-muted-400)]">
+              Entender el hallazgo → revisar el total → decidir → conservar historial.
+            </p>
+            <p className="mt-2 text-xs text-[var(--color-muted-400)]">
+              No permite cambiar inspecciones, precios ni operación del taller.
+            </p>
           </div>
         </Card>
       </section>
 
-      <section aria-labelledby="productos-datatek">
+      <section id="elige-tu-espacio" aria-labelledby="productos-datatek" className="scroll-mt-24">
         <div className="max-w-2xl">
-          <Kicker>Un ecosistema, tres experiencias</Kicker>
+          <Kicker>¿Qué vienes a hacer?</Kicker>
           <h2
             id="productos-datatek"
             className="mt-3 text-[clamp(32px,5vw,52px)] leading-[0.96] font-[300] tracking-[-0.055em]"
           >
-            La misma información, presentada para quien la necesita.
+            Entra por la puerta que corresponde a tu papel.
           </h2>
         </div>
         <div className="mt-8 grid gap-5 lg:grid-cols-3">
@@ -154,6 +151,9 @@ export default function HomePage() {
                 <SectionTitle className="mt-4 text-2xl">{product.name}</SectionTitle>
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-[var(--color-muted-400)]">
                   {product.description}
+                </p>
+                <p className="mt-4 border-t border-white/8 pt-4 text-xs leading-relaxed text-[var(--color-muted-400)]">
+                  {product.boundary}
                 </p>
                 <a
                   href={product.href}

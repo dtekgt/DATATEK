@@ -145,6 +145,11 @@ import {
   type RevokeAndReprepareAuthorizationRequestInput,
   type RevokeAndReprepareAuthorizationRequestOutput,
 } from "./authorization-commands.ts";
+import {
+  openCaseFromRequest,
+  type OpenCaseFromRequestInput,
+  type OpenCaseFromRequestOutput,
+} from "./open-case-journey.ts";
 
 export type CommandResult<T> =
   { ok: true; data: T; replayed: boolean } | { ok: false; error: CommandError };
@@ -152,6 +157,12 @@ export type CommandResult<T> =
 export interface CommandEngine {
   getState(): CrmVehicleState;
   reset(seed?: CrmVehicleState): void;
+
+  /** Atomic Pro intake: customer + vehicle + original request + case. */
+  openCaseFromRequest(
+    ctx: CommandContext,
+    input: OpenCaseFromRequestInput,
+  ): CommandResult<OpenCaseFromRequestOutput>;
 
   // --- CRM and vehicle (Fase 1) ---
   createProvisionalCustomer(
@@ -324,6 +335,8 @@ export function createCommandEngine(seed: CrmVehicleState = createEmptyState()):
     reset: (nextSeed = createEmptyState()) => {
       state = nextSeed;
     },
+
+    openCaseFromRequest: (ctx, input) => apply(openCaseFromRequest(state, ctx, input)),
 
     createProvisionalCustomer: (ctx, input) => apply(createProvisionalCustomer(state, ctx, input)),
     addCustomerContact: (ctx, input) => apply(addCustomerContact(state, ctx, input)),

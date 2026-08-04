@@ -49,10 +49,16 @@ export default async function PassHomePage({
 
       return (
         <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-2">
-            <PageTitle>Hola, {home.customerFirstName}</PageTitle>
-            <Badge tone="success">Motor de comandos</Badge>
-          </div>
+          <header>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone="info">PASS · ESPACIO DEL CONDUCTOR</Badge>
+              <Badge tone="warning">SESIÓN DEMO TEMPORAL</Badge>
+            </div>
+            <PageTitle className="mt-3">Hola, {home.customerFirstName}</PageTitle>
+            <p className="mt-2 text-sm text-[var(--color-muted-400)]">
+              Aquí puedes entender y decidir. La operación interna permanece en Datatek Pro.
+            </p>
+          </header>
 
           <section aria-label="Estado actual">
             <VehicleNowCard vm={now} />
@@ -94,10 +100,16 @@ export default async function PassHomePage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-2">
-        <PageTitle>Hola, {home.customerFirstName}</PageTitle>
-        <Badge tone="neutral">DEMO DATA</Badge>
-      </div>
+      <header>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge tone="info">PASS · ESPACIO DEL CONDUCTOR</Badge>
+          <Badge tone="neutral">DEMO DATA</Badge>
+        </div>
+        <PageTitle className="mt-3">Hola, {home.customerFirstName}</PageTitle>
+        <p className="mt-2 text-sm text-[var(--color-muted-400)]">
+          Aquí puedes entender y decidir. No puedes modificar la operación del taller.
+        </p>
+      </header>
 
       <section aria-label="Estado actual">
         <VehicleNowCard vm={now} />
