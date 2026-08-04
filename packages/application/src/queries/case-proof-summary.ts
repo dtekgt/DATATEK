@@ -8,7 +8,7 @@
 import { effectiveEvidenceVisibility, type AuthorizationStatus } from "@datatek/domain";
 import type { CrmVehicleState } from "../commands/state.ts";
 import type { CaseProofSummaryViewModel, ProofFact } from "../viewmodels/experience.ts";
-import { isVisibleToAudience } from "./shared.ts";
+import { formatGuatemalaDate, isVisibleToAudience } from "./shared.ts";
 import type { QueryContext } from "./types.ts";
 
 const DECISION_LABELS: Record<AuthorizationStatus, string> = {
@@ -41,7 +41,7 @@ export function getCaseProofSummary(
     facts.push({
       id: `fact-inspection-${latestCompletedInspection.id}`,
       label: "Inspección completada",
-      detail: new Date(latestCompletedInspection.completedAt).toLocaleDateString("es-GT"),
+      detail: formatGuatemalaDate(latestCompletedInspection.completedAt),
     });
   }
 
@@ -69,7 +69,7 @@ export function getCaseProofSummary(
     facts.push({
       id: `fact-decision-${latestDecision.id}`,
       label: "Decisión registrada",
-      detail: `${DECISION_LABELS[latestDecision.status]} — ${new Date(latestDecision.decidedAt).toLocaleDateString("es-GT")}`,
+      detail: `${DECISION_LABELS[latestDecision.status]} — ${formatGuatemalaDate(latestDecision.decidedAt)}`,
     });
   }
 

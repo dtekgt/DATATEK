@@ -11,7 +11,7 @@
 import type { CrmVehicleState } from "../commands/state.ts";
 import type { VehicleNowFact } from "../viewmodels/shared.ts";
 import type { VehicleNowViewModel } from "../viewmodels/experience.ts";
-import { isVisibleToAudience } from "./shared.ts";
+import { formatGuatemalaDate, isVisibleToAudience } from "./shared.ts";
 import type { QueryContext } from "./types.ts";
 
 /** A completed brake inspection older than this is "dato vencido" (priority
@@ -26,7 +26,7 @@ function daysBetween(a: Date, b: Date): number {
 }
 
 function formatEsGt(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-GT", { day: "numeric", month: "long" });
+  return formatGuatemalaDate(iso, { day: "numeric", month: "long" });
 }
 
 export function deriveVehicleNowFact(

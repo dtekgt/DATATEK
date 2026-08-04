@@ -4,8 +4,6 @@ import {
   OWNER_ACTOR_ID,
   buildReadyToQuoteCase,
   freezeQuoteForCase,
-  postCommand,
-  getEngineState,
 } from "./helpers/dev-engine";
 
 // R0-D Fase 5 — real E2E for the brakes -> quote -> authorization vertical,
@@ -203,34 +201,26 @@ test.describe("R0-D — revocar y reenviar", () => {
     await page.goto(oldLink);
     await expect(page.getByRole("heading", { name: "Revisa la solicitud" })).toBeVisible();
 
-    // No existe todavía un botón "Reenviar" en la UI real de Pro — Fase 4a
-    // entregó el comando `RevokeAndReprepareAuthorizationRequest` (con su
-    // flag `authorization_reissue`) pero Fase 4b no lo conectó a ningún
-    // control clicable (verificado: `apps/web/src` no referencia
-    // `RevokeAndReprepareAuthorizationRequest` fuera del dev route). Se
-    // invoca aquí vía el mismo motor de comandos real que la UI usaría —
-    // documentado como deuda explícita para R0-E, no simulado como si
-    // existiera un botón.
-    const state = await getEngineState(request);
-    const liveRequest = state.authorizationRequests.find(
-      (r) => r.caseId === built.caseId && r.quoteVersionId === frozen.quoteVersionId,
-    );
-    expect(liveRequest).toBeTruthy();
-
-    const reissued = await postCommand<{ plainToken: string }>(
-      request,
-      "RevokeAndReprepareAuthorizationRequest",
-      { authorizationRequestId: liveRequest!.id, reason: "Token bloqueado — reenvío E2E" },
-      { idempotencyKey: `${idPrefix}-reissue` },
-    );
-    const newLink = `/a/${reissued.data!.plainToken}`;
+    // El reenvío se ejerce desde el control real de Pro. El asesor explica
+    // por qué invalida el vínculo anterior y el nuevo secreto se muestra una
+    // sola vez, igual que al preparar la solicitud inicial.
+    await page.goto(`/pro/o/${ORG_SLUG}/cases/${built.caseId}`);
+    await page
+      .getByLabel("Motivo para generar un enlace nuevo")
+      .fill("Token bloqueado — reenvío E2E");
+    await page.getByRole("button", { name: "Revocar y generar enlace nuevo" }).click();
+    await expect(page.getByText("Enlace anterior revocado")).toBeVisible();
+    const newLink = await page
+      .getByRole("link", { name: "Abrir enlace nuevo" })
+      .getAttribute("href");
+    expect(newLink?.startsWith("/a/")).toBe(true);
 
     // El token VIEJO ya no sirve — este es el punto central del escenario.
     await page.goto(oldLink);
     await expect(page.getByText("Este enlace no es válido")).toBeVisible();
 
     // El token NUEVO sí sirve y decide sobre la MISMA versión congelada.
-    await page.goto(newLink);
+    await page.goto(newLink!);
     await expect(page.getByRole("heading", { name: "Revisa la solicitud" })).toBeVisible();
     await expect(page.getByText(frozen.snapshotHash.slice(0, 10))).toBeVisible();
 

@@ -6,9 +6,9 @@ import { getWebEnv } from "../lib/env";
 getWebEnv();
 
 export const metadata: Metadata = {
-  title: "Datatek — ecosistema de gestión de talleres automotrices",
+  title: "Datatek — claridad y control para talleres automotrices",
   description:
-    "Sitio, Pro, Pass y Market de Datatek. R0-B: shell ejecutable con datos de demostración.",
+    "Datatek conecta la operación del taller con una experiencia clara para el conductor: casos, evidencia, cotizaciones y autorizaciones verificables.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

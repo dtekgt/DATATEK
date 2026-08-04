@@ -1,9 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button, Card, InlineAlert, LinkButton } from "@datatek/ui";
+import { Button, Card, InlineAlert, Input, LinkButton } from "@datatek/ui";
 import {
   prepareAndSendAuthorizationRequest,
+  reissueAndSendAuthorizationRequest,
   type PrepareAuthorizationRequestActionState,
 } from "./actions";
 
@@ -24,6 +25,8 @@ export function PrepareAuthorizationRequestForm({
   audienceCustomerId,
   canPrepareRequest,
   liveRequestStatus,
+  liveRequestId,
+  canReissueRequest,
 }: {
   orgSlug: string;
   caseId: string;
@@ -36,11 +39,17 @@ export function PrepareAuthorizationRequestForm({
    * button. */
   canPrepareRequest: boolean;
   liveRequestStatus: string | null;
+  liveRequestId: string | null;
+  canReissueRequest: boolean;
 }) {
   const [state, formAction, pending] = useActionState<
     PrepareAuthorizationRequestActionState,
     FormData
   >(prepareAndSendAuthorizationRequest, INITIAL_STATE);
+  const [reissueState, reissueAction, reissuePending] = useActionState<
+    PrepareAuthorizationRequestActionState,
+    FormData
+  >(reissueAndSendAuthorizationRequest, INITIAL_STATE);
 
   // Local success always wins, even after the parent's next server render
   // (triggered by this same submit's `revalidatePath`) recomputes
@@ -66,11 +75,63 @@ export function PrepareAuthorizationRequestForm({
     );
   }
 
+  if (reissueState.status === "success" && reissueState.link) {
+    return (
+      <Card accent="brand">
+        <p className="text-sm font-medium">Enlace anterior revocado</p>
+        <p className="mt-1 text-xs text-[var(--color-muted-400)]">
+          Este es el único momento en que se muestra el enlace nuevo. Cópialo y compártelo
+          manualmente con el cliente; el anterior ya no funciona.
+        </p>
+        <code className="mt-3 block break-all rounded-[var(--radius-control)] bg-[var(--surface-well)] p-3 text-xs shadow-[var(--neu-inset)]">
+          {reissueState.link}
+        </code>
+        <LinkButton href={reissueState.link} size="sm" className="mt-3">
+          Abrir enlace nuevo
+        </LinkButton>
+      </Card>
+    );
+  }
+
   if (!canPrepareRequest) {
-    return liveRequestStatus ? (
-      <p className="text-xs text-[var(--color-muted-400)]">
-        Ya existe una solicitud de autorización vigente (estado: {liveRequestStatus}).
-      </p>
+    return liveRequestStatus && liveRequestId ? (
+      <Card>
+        <p className="text-sm font-medium">Solicitud de autorización vigente</p>
+        <p className="mt-1 text-xs text-[var(--color-muted-400)]">
+          Estado: {liveRequestStatus}. El enlace actual sigue siendo válido mientras no venza, se
+          bloquee o el cliente decida.
+        </p>
+        {canReissueRequest ? (
+          <form action={reissueAction} className="mt-4 flex flex-col gap-3">
+            <input type="hidden" name="orgSlug" value={orgSlug} />
+            <input type="hidden" name="caseId" value={caseId} />
+            <input type="hidden" name="authorizationRequestId" value={liveRequestId} />
+            <Input
+              name="reason"
+              label="Motivo para generar un enlace nuevo"
+              placeholder="Ej. El cliente perdió el enlace anterior"
+              maxLength={240}
+              required
+            />
+            {reissueState.status === "error" ? (
+              <InlineAlert
+                tone="danger"
+                title="No se pudo generar un enlace nuevo"
+                description={reissueState.message}
+              />
+            ) : null}
+            <Button
+              type="submit"
+              variant="secondary"
+              size="sm"
+              loading={reissuePending}
+              className="self-start"
+            >
+              Revocar y generar enlace nuevo
+            </Button>
+          </form>
+        ) : null}
+      </Card>
     ) : null;
   }
 

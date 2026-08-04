@@ -4,7 +4,13 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { routesForSurface } from "@datatek/domain";
 import { PassShell } from "./pass-shell";
-import { getPassHomeViewModel } from "@datatek/application";
+
+export interface PassVehicleRail {
+  vehicleLabel: string;
+  statusHeadline: string;
+  statusSource: string;
+  statusObservedAt: string | null;
+}
 
 function matchRouteId(pathname: string): string {
   const routes = routesForSurface("pass");
@@ -19,26 +25,18 @@ function matchRouteId(pathname: string): string {
   return dynamicMatch?.id ?? "pass.home";
 }
 
-export function PassShellLayout({ children }: { children: ReactNode }) {
+export function PassShellLayout({
+  children,
+  vehicleRail,
+}: {
+  children: ReactNode;
+  vehicleRail?: PassVehicleRail;
+}) {
   const pathname = usePathname();
   const activeRouteId = matchRouteId(pathname);
-  const home = getPassHomeViewModel();
-  const selected = home.vehicles.find((v) => v.id === home.selectedVehicleId) ?? home.vehicles[0];
 
   return (
-    <PassShell
-      activeRouteId={activeRouteId}
-      vehicleRail={
-        selected
-          ? {
-              vehicleLabel: selected.label,
-              statusHeadline: selected.now.headline,
-              statusSource: selected.now.source,
-              statusObservedAt: selected.now.observedAt,
-            }
-          : undefined
-      }
-    >
+    <PassShell activeRouteId={activeRouteId} vehicleRail={vehicleRail}>
       {children}
     </PassShell>
   );

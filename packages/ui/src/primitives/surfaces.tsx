@@ -4,7 +4,7 @@ import { cn } from "../utils/cn";
 export function Surface({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("bg-[var(--color-surface-800)] text-[var(--color-paper-50)]", className)}
+      className={cn("bg-[var(--surface-app)] text-[var(--color-paper-50)]", className)}
       {...props}
     />
   );
@@ -28,11 +28,7 @@ export function Card({ accent = "none", className, children, ...props }: CardPro
   return (
     <div
       className={cn(
-        // Las pistas de tipo `image:` y `shadow:` no son opcionales: ante
-        // `bg-[var(--x)]` Tailwind asume color y produce
-        // `background-color: linear-gradient(...)`, que es inválido y se
-        // descarta en silencio. Lo mismo con la sombra.
-        "relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--line-hairline)] bg-[image:var(--surface-card-gradient)] p-6 shadow-[shadow:var(--shadow-card)]",
+        "relative overflow-hidden rounded-[var(--radius-card)] bg-[var(--surface-panel)] p-6 shadow-[var(--neu-raised)]",
         className,
       )}
       {...props}
@@ -56,7 +52,7 @@ export function Panel({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-input)] border border-[var(--line-hairline)] bg-white/[0.045] p-4",
+        "rounded-[var(--radius-control)] border border-[var(--line-hairline)] bg-white/[0.025] p-4 shadow-[var(--neu-flat)]",
         className,
       )}
       {...props}
@@ -85,7 +81,7 @@ export function Badge({ tone = "neutral", className, ...props }: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium",
+        "inline-flex items-center gap-1 rounded-[var(--radius-pill)] px-2.5 py-1 text-xs font-medium shadow-[var(--neu-raised-sm)]",
         toneClasses[tone],
         className,
       )}
@@ -141,7 +137,7 @@ export function Avatar({ name, size = 36, className }: AvatarProps) {
       aria-hidden
       style={{ width: size, height: size }}
       className={cn(
-        "inline-flex items-center justify-center rounded-full bg-[var(--color-surface-700)] text-xs font-semibold text-[var(--color-paper-50)]",
+        "inline-flex items-center justify-center rounded-full bg-[var(--surface-panel)] text-xs font-semibold text-[var(--color-paper-50)] shadow-[var(--neu-raised-sm)]",
         className,
       )}
     >

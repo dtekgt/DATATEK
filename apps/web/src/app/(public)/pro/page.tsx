@@ -4,24 +4,24 @@ export default function ProMarketingPage() {
   return (
     <MarketingPage
       eyebrow="Para talleres"
-      title="Datatek Pro"
-      intro="La superficie B2B que opera el taller: casos verificables, cotizaciones congeladas, autorización exacta y una sola siguiente acción por caso, siempre con responsable y vencimiento visibles."
+      title="Tu taller, ordenado alrededor de cada vehículo"
+      intro="Datatek Pro reúne el caso, la agenda, la inspección, la evidencia y la autorización en un solo espacio. El equipo siempre sabe qué sigue y el cliente entiende qué está decidiendo."
       sections={[
         {
           title: "Caso verificable",
-          body: "Expediente operativo central; la cita administra tiempo, el caso administra la verdad.",
+          body: "Fotos, hallazgos, cotizaciones y decisiones permanecen dentro del mismo expediente.",
         },
         {
           title: "Cotización congelada",
-          body: "Versión inmutable con snapshot y hash; cotizado no significa autorizado.",
+          body: "Cuando se envía al cliente, esa versión deja de cambiar. Cotizar no significa autorizar.",
         },
         {
           title: "Siguiente acción",
-          body: "Una acción primaria única, con responsable o razón explícita y vencimiento.",
+          body: "Cada caso destaca una sola tarea principal, su responsable y cuándo debe resolverse.",
         },
         {
-          title: "Multiempresa segura",
-          body: "Toda entidad privada de taller lleva organization_id; RLS nace con cada tabla.",
+          title: "Información separada",
+          body: "Cada taller trabaja dentro de su propio espacio. La interfaz nunca sustituye los controles de acceso del servidor.",
         },
       ]}
     />

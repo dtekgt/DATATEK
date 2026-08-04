@@ -26,7 +26,7 @@ export function Sidebar({ items, collapsed, onToggle, brand }: SidebarProps) {
     <nav
       aria-label="Navegación principal"
       className={cn(
-        "hidden shrink-0 flex-col border-r border-white/8 bg-[var(--color-ink-900)] py-4 transition-[width] duration-[var(--duration-base)] md:flex",
+        "hidden shrink-0 flex-col border-r border-white/8 bg-[var(--surface-panel)] py-4 shadow-[var(--neu-raised-sm)] transition-[width] duration-[var(--duration-base)] md:flex",
         collapsed ? "w-[72px]" : "w-[272px]",
       )}
     >
@@ -51,7 +51,7 @@ export function Sidebar({ items, collapsed, onToggle, brand }: SidebarProps) {
               className={cn(
                 "focus-ring tap-target flex items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium",
                 item.active
-                  ? "bg-[var(--color-brand-500)]/15 text-[var(--color-brand-400)]"
+                  ? "bg-[var(--surface-well)] text-[var(--color-brand-400)] shadow-[var(--neu-inset)]"
                   : "text-[var(--color-muted-400)] hover:bg-white/5 hover:text-[var(--color-paper-50)]",
               )}
             >
@@ -73,7 +73,7 @@ export interface TopbarProps {
 
 export function Topbar({ title, actions, onOpenMobileNav }: TopbarProps) {
   return (
-    <header className="flex h-16 items-center gap-3 border-b border-white/8 bg-[var(--color-ink-900)] px-4">
+    <header className="flex h-16 items-center gap-3 border-b border-white/8 bg-[var(--surface-app)] px-4">
       {onOpenMobileNav ? (
         <button
           type="button"
@@ -109,7 +109,7 @@ export function BottomNav({ items }: { items: BottomNavItem[] }) {
   return (
     <nav
       aria-label="Navegación inferior"
-      className="fixed inset-x-0 bottom-0 z-30 flex border-t border-white/8 bg-[var(--color-ink-900)]/95 backdrop-blur md:hidden"
+      className="fixed inset-x-3 bottom-3 z-30 flex overflow-hidden rounded-[var(--radius-card)] bg-[var(--surface-panel)]/95 shadow-[var(--neu-raised-lg)] backdrop-blur md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {items.map((item) => (
@@ -334,7 +334,17 @@ export function ElevatedAccessBanner({
         ) : null}
         {ticket ? <> · ticket {ticket}</> : null}
         {reason ? <> · {reason}</> : null}
-        {expiresAt ? <> · vence {new Date(expiresAt).toLocaleString("es-GT")}</> : null}
+        {expiresAt ? (
+          <>
+            {" "}
+            · vence{" "}
+            {new Intl.DateTimeFormat("es-GT", {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: "America/Guatemala",
+            }).format(new Date(expiresAt))}
+          </>
+        ) : null}
       </span>
     </div>
   );

@@ -49,6 +49,17 @@ const prepareRequestSchema = z.object({
   audienceCustomerId: z.string().min(1).max(MAX_ID_LENGTH),
 });
 
+const reissueRequestSchema = z.object({
+  orgSlug: z
+    .string()
+    .min(1)
+    .max(MAX_SLUG_LENGTH)
+    .regex(/^[a-z0-9-]+$/),
+  caseId: z.string().min(1).max(MAX_ID_LENGTH),
+  authorizationRequestId: z.string().min(1).max(MAX_ID_LENGTH),
+  reason: z.string().trim().min(5).max(240),
+});
+
 // `"use server"` files may only export async functions — a plain constant
 // (even a `{status:"idle"}` initial-state object) is not allowed, so the
 // initial value for `useActionState` is declared directly in
@@ -122,5 +133,70 @@ export async function prepareAndSendAuthorizationRequest(
     status: "success",
     plainToken: prepared.data.plainToken,
     link: `/a/${prepared.data.plainToken}`,
+  };
+}
+
+/** Revokes the current live request and creates a fresh one-time link. This
+ * is the staff-facing seam that was missing from R0-D: the domain command
+ * existed, but a workshop advisor had no clickable way to use it. */
+export async function reissueAndSendAuthorizationRequest(
+  _prev: PrepareAuthorizationRequestActionState,
+  formData: FormData,
+): Promise<PrepareAuthorizationRequestActionState> {
+  const parsed = reissueRequestSchema.safeParse({
+    orgSlug: String(formData.get("orgSlug") ?? ""),
+    caseId: String(formData.get("caseId") ?? ""),
+    authorizationRequestId: String(formData.get("authorizationRequestId") ?? ""),
+    reason: String(formData.get("reason") ?? ""),
+  });
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message: "Escribe un motivo breve para generar un enlace nuevo.",
+    };
+  }
+
+  const { orgSlug, caseId, authorizationRequestId, reason } = parsed.data;
+  const session = await getWebSession(orgSlug, "authorization.request");
+  if (session.accessState.kind !== "allowed" || !session.actorId) {
+    return {
+      status: "error",
+      message: "No tienes permiso para reenviar solicitudes en esta organización.",
+    };
+  }
+
+  const ctx = buildStaffCommandContext({ actorId: session.actorId, orgSlug });
+  if (!ctx) return { status: "error", message: "Organización no encontrada." };
+
+  const engine = getCommandsEngine();
+  const reissued = engine.revokeAndReprepareAuthorizationRequest(ctx, {
+    authorizationRequestId,
+    reason,
+  });
+  if (!reissued.ok) {
+    return { status: "error", message: reissued.error.message };
+  }
+
+  const sendCtx = buildStaffCommandContext({ actorId: session.actorId, orgSlug });
+  if (!sendCtx) return { status: "error", message: "Organización no encontrada." };
+  const sent = engine.markAuthorizationRequestSent(sendCtx, {
+    authorizationRequestId: reissued.data.request.id,
+    channel: "simulado_local",
+    result: "sent",
+    note: "Enlace regenerado desde el espacio de trabajo del caso.",
+  });
+  if (!sent.ok) {
+    return {
+      status: "error",
+      message: `El enlace se regeneró, pero no pudo registrarse el envío: ${sent.error.message}`,
+    };
+  }
+
+  revalidatePath(`/pro/o/${orgSlug}/cases/${caseId}`);
+  return {
+    status: "success",
+    plainToken: reissued.data.plainToken,
+    link: `/a/${reissued.data.plainToken}`,
   };
 }

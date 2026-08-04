@@ -11,11 +11,10 @@ const fieldWrap = "flex flex-col gap-1.5";
 const label = "text-sm font-medium text-[var(--color-paper-50)]";
 const help = "text-xs text-[var(--color-muted-400)]";
 const errorText = "text-xs text-[var(--color-danger-400)]";
-// Rectángulo suave de 18px, no cápsula: un campo de texto en cápsula obliga a
-// un padding lateral enorme y empuja el cursor lejos del borde. La marca
-// reserva la cápsula para controles de acción.
+// Los campos son pozos hundidos: el contraste de profundidad distingue la
+// entrada editable de una tarjeta de lectura sin depender sólo del borde.
 const controlBase =
-  "tap-target focus-ring min-h-[var(--control-h)] w-full rounded-[var(--radius-input)] border border-[var(--line-hairline)] bg-white/[0.035] px-4 text-sm text-[var(--color-paper-50)] transition-colors duration-[var(--duration-fast)] ease-[var(--ease-standard)] placeholder:text-[var(--color-muted-400)] hover:border-[var(--line-strong)] disabled:opacity-50";
+  "tap-target focus-ring min-h-[var(--control-h)] w-full rounded-[var(--radius-input)] border-0 bg-[var(--surface-well)] px-4 text-sm text-[var(--color-paper-50)] shadow-[var(--neu-inset)] transition-[background-color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-standard)] placeholder:text-[var(--color-muted-400)] disabled:opacity-50";
 
 interface FieldChromeProps {
   id: string;
@@ -83,7 +82,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           className={cn(
             controlBase,
             "h-11",
-            error && "border-[var(--color-danger-400)]",
+            error && "ring-1 ring-[var(--color-danger-400)]",
             className,
           )}
           aria-invalid={Boolean(error) || undefined}
@@ -126,7 +125,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
             // `min-h-24` hacía que dos reglas de la misma especificidad
             // compitieran por orden de emisión. Se fija la altura aquí.
             "!min-h-32 py-3 leading-relaxed",
-            error && "border-[var(--color-danger-400)]",
+            error && "ring-1 ring-[var(--color-danger-400)]",
             className,
           )}
           aria-invalid={Boolean(error) || undefined}
@@ -172,7 +171,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
           className={cn(
             controlBase,
             "h-11",
-            error && "border-[var(--color-danger-400)]",
+            error && "ring-1 ring-[var(--color-danger-400)]",
             className,
           )}
           aria-invalid={Boolean(error) || undefined}
@@ -265,8 +264,8 @@ export function Switch({ label: labelText, checked, onChange, disabled }: Switch
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
-        "tap-target focus-ring relative inline-flex h-7 w-12 items-center rounded-full transition-colors disabled:opacity-50",
-        checked ? "bg-[var(--color-brand-500)]" : "bg-white/15",
+        "tap-target focus-ring relative inline-flex h-7 w-12 items-center rounded-full shadow-[var(--neu-inset)] transition-colors disabled:opacity-50",
+        checked ? "bg-[var(--color-brand-500)]" : "bg-[var(--surface-well)]",
       )}
     >
       <span

@@ -29,6 +29,17 @@ export interface DateTimeTextProps {
   className?: string;
 }
 
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/** A date-only value is a calendar date, not a UTC instant. Parsing
+ * `2026-07-30` with `new Date()` creates midnight UTC, which is still July
+ * 29 in Guatemala. Noon UTC keeps the intended calendar day when formatted
+ * in America/Guatemala without inventing a local time for the user. */
+function parseDateValue(value: string | Date): Date {
+  if (value instanceof Date) return value;
+  return new Date(DATE_ONLY_PATTERN.test(value) ? `${value}T12:00:00.000Z` : value);
+}
+
 export function DateTimeText({
   value,
   locale = "es-GT",
@@ -36,7 +47,7 @@ export function DateTimeText({
   mode = "date",
   className,
 }: DateTimeTextProps) {
-  const date = typeof value === "string" ? new Date(value) : value;
+  const date = parseDateValue(value);
   if (Number.isNaN(date.getTime())) {
     return <span className={cn("text-muted-400 italic", className)}>fecha desconocida</span>;
   }
@@ -51,7 +62,12 @@ export function DateTimeText({
       ? { dateStyle: "medium", timeStyle: "short", timeZone }
       : { dateStyle: "medium", timeZone };
   return (
-    <time dateTime={date.toISOString()} className={cn("tabular-nums", className)}>
+    <time
+      dateTime={
+        typeof value === "string" && DATE_ONLY_PATTERN.test(value) ? value : date.toISOString()
+      }
+      className={cn("tabular-nums", className)}
+    >
       {new Intl.DateTimeFormat(locale, options).format(date)}
     </time>
   );

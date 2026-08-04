@@ -81,7 +81,7 @@ export function VehicleContextRail({
       data-component="VehicleContextRail"
       data-presented-as="VehicleNowNextBar"
       className={cn(
-        "flex items-center gap-3 rounded-[var(--radius-control)] border border-white/10 bg-[var(--color-surface-800)]",
+        "flex items-center gap-3 rounded-[var(--radius-control)] bg-[var(--surface-panel)] shadow-[var(--neu-raised-sm)]",
         compact ? "px-3 py-2 text-sm" : "p-4",
       )}
     >

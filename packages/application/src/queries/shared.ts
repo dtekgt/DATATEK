@@ -3,6 +3,21 @@ import type { Visibility } from "@datatek/domain";
 import type { Money } from "../viewmodels/shared.ts";
 import type { ProjectionAudience } from "./types.ts";
 
+export const DATATEK_TIME_ZONE = "America/Guatemala";
+
+/** All customer-facing dates use the business timezone explicitly. Server
+ * locale/UTC defaults must never move a Guatemala event to another day. */
+export function formatGuatemalaDate(
+  value: string | Date,
+  options: Intl.DateTimeFormatOptions = { dateStyle: "medium" },
+): string {
+  const date = typeof value === "string" ? new Date(value) : value;
+  return new Intl.DateTimeFormat("es-GT", {
+    ...options,
+    timeZone: DATATEK_TIME_ZONE,
+  }).format(date);
+}
+
 /** Cross-cutting visibility rule reused by every query that filters
  * findings/case notes/quote items by audience — mirrors
  * `isEvidenceVisibleToCustomer`

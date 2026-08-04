@@ -5,28 +5,25 @@ import { cn } from "../utils/cn";
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
-// Cápsula, no rectángulo: es la regla de forma de la marca. El hover levanta
-// 2px y nunca escala — el design system es explícito en que no hay rebotes.
-// `disabled:translate-y-0` evita que un botón inhabilitado igual se mueva.
+// Botón de panel: elevado en reposo y comprimido al presionar. Nunca rebota.
 const base =
-  "tap-target focus-ring inline-flex items-center justify-center gap-2.5 rounded-[var(--radius-control)] text-[13px] font-[550] tracking-[-0.01em] transition-[transform,background-color,border-color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-standard)] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:hover:translate-y-0";
+  "tap-target focus-ring inline-flex items-center justify-center gap-2.5 rounded-[var(--radius-control)] text-[13px] font-[550] tracking-[-0.01em] shadow-[var(--neu-raised-sm)] transition-[transform,background-color,color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-standard)] active:translate-y-px active:shadow-[var(--neu-pressed)] disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
   // El primario es un degradado del rojo caliente al rojo base con sombra
   // teñida — la marca no usa un relleno plano para la acción principal.
   primary:
-    "border border-transparent bg-[image:linear-gradient(135deg,var(--color-brand-400),var(--color-brand-500))] text-white shadow-[0_12px_34px_rgba(227,32,37,0.22)]",
-  secondary:
-    "border border-[var(--line-strong)] bg-white/[0.035] text-[var(--color-paper-50)] hover:border-[var(--color-brand-500)]/50",
+    "bg-[image:linear-gradient(135deg,var(--color-brand-500),var(--color-brand-400))] text-white hover:bg-[image:linear-gradient(135deg,var(--color-brand-400),#ff5558)]",
+  secondary: "bg-[var(--surface-panel)] text-[var(--color-paper-50)] hover:text-white",
   ghost:
-    "border border-transparent bg-transparent text-[var(--color-muted-400)] hover:text-[var(--color-paper-50)] hover:bg-white/5",
+    "bg-transparent text-[var(--color-muted-400)] shadow-none hover:bg-white/5 hover:text-[var(--color-paper-50)]",
   // Contorno, no relleno. Un `danger` relleno junto a un `primary` relleno
   // pone dos acciones primarias en la misma pantalla — prohibido por el NO-GO
   // de R0 y por la regla de un solo acento del design system. En la pantalla
   // de autorización eso es concreto: "Autorizar todo" y "Rechazar" competían
   // por el mismo peso visual justo donde el cliente decide un gasto.
   danger:
-    "border border-[var(--color-danger-400)]/50 bg-transparent text-[var(--color-danger-400)] hover:border-[var(--color-danger-400)] hover:bg-[var(--color-danger-400)]/10",
+    "bg-[var(--surface-panel)] text-[var(--color-danger-400)] ring-1 ring-[var(--color-danger-400)]/35 hover:bg-[var(--color-danger-400)]/10",
 };
 
 const sizes: Record<Size, string> = {

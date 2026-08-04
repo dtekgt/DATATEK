@@ -22,6 +22,23 @@
   --color-info-400: #61a8ff;
   --color-danger-400: #ff6c70;
 
+  /* Motorsport — acentos secundarios del sistema de diseño DATATEK. */
+  --color-navy-900: #151659;
+  --color-navy-800: #1e1f6e;
+  --color-accent-blue-500: #3094bf;
+  --color-accent-blue-400: #4fadd6;
+  --color-steel-300: #babfc2;
+
+  /* Superficies táctiles tipo panel de herramienta. */
+  --color-neu-base: #1a1e25;
+  --color-neu-base-raised: #20242c;
+  --color-neu-base-sunken: #15181e;
+  --color-neu-highlight: rgba(255, 255, 255, 0.055);
+  --color-neu-shadow: rgba(0, 0, 0, 0.62);
+  --surface-app: var(--color-neu-base);
+  --surface-panel: var(--color-neu-base-raised);
+  --surface-well: var(--color-neu-base-sunken);
+
   /* Spacing — 4px scale. */
   --spacing: 0.25rem;
 
@@ -30,11 +47,11 @@
      `--radius-control` es cápsula porque botones, chips, pestañas y píldoras
      son controles; las superficies usan `card`/`hero`. */
   --radius-pill: 999px;
-  --radius-xs: 14px;
-  --radius-input: 18px;
-  --radius-control: 999px;
-  --radius-card: 24px;
-  --radius-hero: 30px;
+  --radius-xs: 8px;
+  --radius-input: 10px;
+  --radius-control: 14px;
+  --radius-card: 20px;
+  --radius-hero: 28px;
 
   /* Alturas de control. El design system define sm=40px, pero R0-E verificó
      objetivos táctiles de 44px (WCAG 2.2 AA, criterio 2.5.8) y esa medición
@@ -45,10 +62,10 @@
 
   /* Motion — curva única de desaceleración de la marca, sin rebotes.
      Respeta reduced motion (ver más abajo). */
-  --duration-fast: 180ms;
-  --duration-base: 350ms;
-  --duration-slow: 800ms;
-  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 160ms;
+  --duration-base: 220ms;
+  --duration-slow: 280ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
   /* Efectos — hairline casi blanca, sombra ambiente suave y el acento LED. */
   --line-hairline: rgba(255, 255, 255, 0.11);
@@ -56,7 +73,15 @@
   --shadow-card: 0 28px 80px rgba(0, 0, 0, 0.38);
   --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.26);
   --glow-accent: 0 0 20px rgba(227, 32, 37, 0.55);
-  --surface-card-gradient: linear-gradient(150deg, rgba(17, 20, 26, 0.94), rgba(7, 8, 11, 0.91));
+  --neu-raised: 7px 7px 16px var(--color-neu-shadow), -5px -5px 12px var(--color-neu-highlight);
+  --neu-raised-sm: 4px 4px 10px var(--color-neu-shadow), -3px -3px 8px var(--color-neu-highlight);
+  --neu-raised-lg:
+    10px 10px 22px var(--color-neu-shadow), -7px -7px 16px var(--color-neu-highlight);
+  --neu-inset:
+    inset 4px 4px 10px var(--color-neu-shadow), inset -3px -3px 8px var(--color-neu-highlight);
+  --neu-pressed:
+    inset 3px 3px 7px var(--color-neu-shadow), inset -2px -2px 5px var(--color-neu-highlight);
+  --neu-flat: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 
   /* Tipografía — displays en peso 300 con tracking negativo; etiquetas al
      revés: diminutas, semibold, mayúsculas y muy espaciadas. */
@@ -95,7 +120,7 @@
 }
 
 body {
-  background-color: var(--color-ink-950);
+  background-color: var(--surface-app);
   color: var(--color-paper-50);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;

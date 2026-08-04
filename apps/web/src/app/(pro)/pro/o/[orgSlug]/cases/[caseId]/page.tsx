@@ -2,6 +2,8 @@ import { getCaseWorkspaceViewModel, friendlyCaseStatus } from "@datatek/applicat
 import {
   getProCaseExperience,
   getCaseProofSummary,
+  FEATURE_KEY_AUTHORIZATION_REISSUE,
+  isFeatureEnabled,
   type CrmVehicleState,
 } from "@datatek/application/commands";
 import {
@@ -77,6 +79,8 @@ export default async function ProCaseWorkspacePage({
   let frozenVersionId: string | null = null;
   let audienceCustomerId: string | null = null;
   let liveRequestStatus: string | null = null;
+  let liveRequestId: string | null = null;
+  let canReissueRequest = false;
 
   if (session.accessState.kind === "allowed" && session.organizationId && session.actorId) {
     const ctx = {
@@ -102,6 +106,11 @@ export default async function ProCaseWorkspacePage({
           LIVE_REQUEST_STATUSES.has(r.status),
       );
       liveRequestStatus = liveRequest?.status ?? null;
+      liveRequestId = liveRequest?.id ?? null;
+      canReissueRequest = Boolean(
+        liveRequest &&
+        isFeatureEnabled(state, session.organizationId, FEATURE_KEY_AUTHORIZATION_REISSUE),
+      );
       // `PrepareAuthorizationRequest` only ever succeeds from case status
       // `inspection` (it transitions inspection -> waiting_authorization
       // internally) — checking ONLY "no live request" is not enough once a
@@ -213,6 +222,8 @@ export default async function ProCaseWorkspacePage({
               audienceCustomerId={audienceCustomerId}
               canPrepareRequest={canPrepareRequest}
               liveRequestStatus={liveRequestStatus}
+              liveRequestId={liveRequestId}
+              canReissueRequest={canReissueRequest}
             />
           ) : null}
           <Tabs ariaLabel="Detalle del caso" items={tabs} />
