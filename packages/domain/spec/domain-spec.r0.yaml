@@ -89,6 +89,47 @@ brake_conditions:
   - not_inspected
   - not_applicable
 
+# Addendum — corrección y disputa de hechos (DATATEK_REORIENTACION
+# ESTRATEGICA, sección 3.5/12.3/14.3: "el historial se corrige; no se
+# reescribe silenciosamente"). Generaliza el patrón que
+# `vehicle_odometer_events.status` (accepted/conflict, ola 0030) ya
+# demostró para un solo tipo de hecho: ninguna fila que respalde una
+# decisión o una narrativa se sobrescribe ni se borra — una disputa abre
+# un ciclo explícito que termina en aceptación, rechazo o retiro, y una
+# corrección aceptada siempre produce un evento nuevo, nunca una edición
+# del original. Ver `docs/domain/history-correction-and-visibility.md`.
+correction_request_statuses:
+  - open
+  - evidence_requested
+  - accepted
+  - rejected
+  - withdrawn
+
+# Catálogo cerrado y aditivo de qué filas pueden ser objeto de una
+# disputa — nunca "cualquier tabla", para que abrir esta capacidad a un
+# nuevo tipo de hecho sea una decisión explícita, no un descuido. Un
+# `correction_request` referencia exactamente un `(target_type,
+# target_id)`, mismo patrón polimórfico que `evidence_links.entity_type`
+# (0070).
+correction_target_types:
+  - vehicle_odometer_event
+  - inspection_result
+  - finding
+  - vehicle_ownership_claim
+  - case_note
+
+# Addendum — visibilidad granular compartida (sección 12.4: "el
+# propietario debe poder decidir qué comparte con un taller"). Catálogo
+# cerrado de qué puede activarse/desactivarse por grant — nunca implícito
+# en el scope de `vehicle_access_grants` (que sigue decidiendo SOLO
+# "puede acceder", no "a qué exactamente"). Aditivo: ningún campo
+# listado aquí se asume visible sin una fila explícita que lo habilite.
+visibility_scope_fields:
+  - case_notes_internal
+  - evidence_internal
+  - cost_breakdown
+  - previous_owner_history
+
 # Extraído de DATATEK_R0_A_CONTRACT_PACK.md sección 5.2 (estados de cita) y
 # 5.3 (estados de inspección) — R0-D Fase 2, olas 0060/0070.
 appointment_statuses:
@@ -156,6 +197,13 @@ organization_permissions:
   # 0094 — catálogo de productos/repuestos, por organización.
   - parts.read
   - parts.manage
+  # Addendum — corrección y disputa de hechos (ver correction_request_statuses
+  # arriba). `history.dispute` levanta o hace triage de una disputa;
+  # `history.correct` decide su resolución y produce el evento corregido —
+  # separados a propósito para que levantar una disputa nunca implique
+  # poder resolverla a favor propio.
+  - history.dispute
+  - history.correct
 
 platform_permissions:
   - platform.control.enter
@@ -208,6 +256,8 @@ organization_role_templates:
     - finance.manage
     - parts.read
     - parts.manage
+    - history.dispute
+    - history.correct
   advisor:
     - organization.read
     - membership.read
@@ -230,6 +280,7 @@ organization_role_templates:
     - authorization.request
     - work.read
     - parts.read
+    - history.dispute
   inspector:
     - organization.read
     - catalog.read

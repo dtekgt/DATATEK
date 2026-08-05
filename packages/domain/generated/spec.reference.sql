@@ -63,7 +63,7 @@
 
 -- organization_permissions
 -- DO $$ BEGIN
---   -- valores permitidos: 'organization.read', 'organization.manage', 'branch.manage', 'membership.read', 'membership.manage', 'role.assign', 'catalog.read', 'catalog.manage', 'audit.read_organization', 'crm.read', 'crm.manage', 'vehicle.read', 'vehicle.manage', 'intake.read', 'intake.manage', 'agenda.read', 'agenda.manage', 'inspection.read', 'inspection.publish', 'evidence.read_internal', 'evidence.read_customer', 'evidence.upload', 'evidence.publish_to_customer', 'quote.read', 'quote.manage', 'authorization.request', 'authorization.decide', 'work.read', 'work.manage', 'quality.manage', 'finance.read', 'finance.manage', 'parts.read', 'parts.manage'
+--   -- valores permitidos: 'organization.read', 'organization.manage', 'branch.manage', 'membership.read', 'membership.manage', 'role.assign', 'catalog.read', 'catalog.manage', 'audit.read_organization', 'crm.read', 'crm.manage', 'vehicle.read', 'vehicle.manage', 'intake.read', 'intake.manage', 'agenda.read', 'agenda.manage', 'inspection.read', 'inspection.publish', 'evidence.read_internal', 'evidence.read_customer', 'evidence.upload', 'evidence.publish_to_customer', 'quote.read', 'quote.manage', 'authorization.request', 'authorization.decide', 'work.read', 'work.manage', 'quality.manage', 'finance.read', 'finance.manage', 'parts.read', 'parts.manage', 'history.dispute', 'history.correct'
 -- END $$;
 
 -- platform_permissions
@@ -72,8 +72,8 @@
 -- END $$;
 
 -- organization_role_templates
---   owner: organization.read, organization.manage, branch.manage, membership.read, membership.manage, role.assign, catalog.read, catalog.manage, audit.read_organization, crm.read, crm.manage, vehicle.read, vehicle.manage, intake.read, intake.manage, agenda.read, agenda.manage, inspection.read, inspection.publish, evidence.read_internal, evidence.read_customer, evidence.upload, evidence.publish_to_customer, quote.read, quote.manage, authorization.request, authorization.decide, work.read, work.manage, quality.manage, finance.read, finance.manage, parts.read, parts.manage
---   advisor: organization.read, membership.read, catalog.read, crm.read, crm.manage, vehicle.read, vehicle.manage, intake.read, intake.manage, agenda.read, agenda.manage, inspection.read, evidence.read_internal, evidence.read_customer, evidence.upload, evidence.publish_to_customer, quote.read, quote.manage, authorization.request, work.read, parts.read
+--   owner: organization.read, organization.manage, branch.manage, membership.read, membership.manage, role.assign, catalog.read, catalog.manage, audit.read_organization, crm.read, crm.manage, vehicle.read, vehicle.manage, intake.read, intake.manage, agenda.read, agenda.manage, inspection.read, inspection.publish, evidence.read_internal, evidence.read_customer, evidence.upload, evidence.publish_to_customer, quote.read, quote.manage, authorization.request, authorization.decide, work.read, work.manage, quality.manage, finance.read, finance.manage, parts.read, parts.manage, history.dispute, history.correct
+--   advisor: organization.read, membership.read, catalog.read, crm.read, crm.manage, vehicle.read, vehicle.manage, intake.read, intake.manage, agenda.read, agenda.manage, inspection.read, evidence.read_internal, evidence.read_customer, evidence.upload, evidence.publish_to_customer, quote.read, quote.manage, authorization.request, work.read, parts.read, history.dispute
 --   inspector: organization.read, catalog.read, vehicle.read, inspection.read, inspection.publish, evidence.read_internal, evidence.upload, work.read
 --   mechanic: organization.read, catalog.read, vehicle.read, work.read, work.manage, parts.read
 --   cashier: organization.read, catalog.read, finance.read, finance.manage, parts.read
