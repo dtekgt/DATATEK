@@ -227,7 +227,8 @@ create table service_requests (
   created_by uuid references auth.users (id),
   foreign key (case_id, organization_id) references cases (id, organization_id) on delete cascade,
   foreign key (source_intake_entry_id, organization_id)
-    references intake_entries (id, organization_id) on delete set null
+    references intake_entries (id, organization_id) on delete set null,
+  unique (id, organization_id)
 );
 
 comment on table service_requests is

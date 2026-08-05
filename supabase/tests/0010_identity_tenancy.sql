@@ -133,7 +133,11 @@ select is(
 );
 
 -- 12. sesión expirada deja de funcionar.
-select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+-- El insert es preparación de fixture, no una aserción: va con el rol dueño
+-- de la prueba (mismo patrón que supabase/tests/0040_catalog.sql línea 63).
+-- `authenticated` no tiene grant de insert sobre support_access_sessions, que
+-- es justamente lo que prueban los casos de arriba.
+reset role;
 insert into support_access_sessions (
   platform_membership_id, organization_id, ticket, reason, scope, status, starts_at, expires_at
 ) values (
@@ -162,7 +166,8 @@ select is(
 );
 
 -- 14. Membership fuera de vigencia no concede nada.
-select pg_temp.as_user('00000000-0000-0000-0000-0000000000c2');
+-- Igual que el caso 12: el insert es preparación, va con el rol dueño.
+reset role;
 insert into organization_memberships (id, user_id, organization_id, status, effective_from, effective_until)
 values (
   '30000000-0000-0000-0000-0000000000ff',

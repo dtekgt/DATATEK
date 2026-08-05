@@ -52,6 +52,7 @@ select throws_ok(
   $$ insert into service_catalog_versions (catalog_item_id, version_number, price_mode, fixed_amount, currency)
      select id, 99, 'fixed', 100, 'GTQ' from service_catalog_items where key = 'brakes-inspection-visual' $$,
   '42501',
+  null,
   'authenticated no puede insertar directamente en service_catalog_versions'
 );
 
@@ -69,6 +70,7 @@ select throws_ok(
   $$ insert into service_catalog_versions (catalog_item_id, version_number, price_mode, currency)
      select id, 1, 'fixed', 'GTQ' from service_catalog_items where key = 'test-price-mode-item' $$,
   '23514',
+  null,
   'price_mode=fixed sin fixed_amount viola el constraint de sección 4.15'
 );
 
@@ -76,6 +78,7 @@ select throws_ok(
   $$ insert into service_catalog_versions (catalog_item_id, version_number, price_mode, from_amount, currency)
      select id, 2, 'range', 100, 'GTQ' from service_catalog_items where key = 'test-price-mode-item' $$,
   '23514',
+  null,
   'price_mode=range con from_amount en vez de range_min/range_max viola el constraint'
 );
 
@@ -83,6 +86,7 @@ select throws_ok(
   $$ insert into service_catalog_versions (catalog_item_id, version_number, price_mode, range_min, range_max, currency)
      select id, 3, 'range', 100, 50, 'GTQ' from service_catalog_items where key = 'test-price-mode-item' $$,
   '23514',
+  null,
   'price_mode=range con range_min > range_max viola el constraint (min <= max)'
 );
 
@@ -90,6 +94,7 @@ select throws_ok(
   $$ insert into service_catalog_versions (catalog_item_id, version_number, price_mode, fixed_amount)
      select id, 4, 'inspection_required', 100 from service_catalog_items where key = 'test-price-mode-item' $$,
   '23514',
+  null,
   'price_mode=inspection_required con un monto presente viola el constraint (no requiere monto)'
 );
 

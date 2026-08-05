@@ -80,6 +80,7 @@ select throws_ok(
      select '10000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000001', i.id, 'rear', 'left', 'not_inspected', 'observed', '00000000-0000-0000-0000-0000000000a3', now()
      from inspection_template_items i where i.item_key = 'caliper_condition' $$,
   '23514',
+  null,
   'condition=not_inspected sin notes viola el constraint de motivo obligatorio'
 );
 
@@ -98,6 +99,7 @@ select throws_ok(
      select '10000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000001', i.id, 'front', null, 'pass', 'observed', '00000000-0000-0000-0000-0000000000a3', now()
      from inspection_template_items i where i.item_key = 'hoses_condition' $$,
   '23514',
+  null,
   'axle sin side (o viceversa) viola el constraint de coherencia eje/lado'
 );
 
@@ -107,6 +109,7 @@ select throws_ok(
   $$ insert into maintenance_recommendations (organization_id, case_id, vehicle_id, trigger_kind, basis_kind, actor_id)
      values ('10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', '70000000-0000-0000-0000-000000000001', 'date', 'manufacturer', '00000000-0000-0000-0000-0000000000a3') $$,
   '23514',
+  null,
   'trigger_kind=date sin due_at viola el constraint de sección 4.15'
 );
 
@@ -116,6 +119,7 @@ select throws_ok(
   $$ insert into maintenance_recommendations (organization_id, case_id, vehicle_id, trigger_kind, basis_kind, status, actor_id)
      values ('10000000-0000-0000-0000-000000000001', '80000000-0000-0000-0000-000000000005', '70000000-0000-0000-0000-000000000001', 'condition', 'inspection', 'unknown', '00000000-0000-0000-0000-0000000000a3') $$,
   '23514',
+  null,
   'trigger_kind=condition sin customer_explanation viola el constraint (así se modela una recomendación unknown)'
 );
 
@@ -126,6 +130,7 @@ select throws_ok(
   $$ insert into evidence_assets (organization_id, upload_intent_id, bucket, path, mime_declared, visibility_max)
      values ('10000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000006', 'evidence-dtek', 'x', 'image/jpeg', 'internal') $$,
   '42501',
+  null,
   'authenticated no puede insertar directamente en evidence_assets'
 );
 

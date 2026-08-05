@@ -63,6 +63,7 @@ select throws_ok(
      values ('10000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000001',
        '81000000-0000-0000-0000-000000000004', 'active', '2026-07-31 14:30:00+00', '2026-07-31 15:30:00+00') $$,
   '23P01',
+  null,
   'una reserva que se solapa en el mismo recurso viola resource_reservations_no_overlap (EXCLUDE)'
 );
 
@@ -111,6 +112,7 @@ select throws_ok(
      values ('10000000-0000-0000-0000-000000000001', '81000000-0000-0000-0000-000000000001',
        '81000000-0000-0000-0000-000000000004', 'active', '2027-01-01 09:00:00+00', '2027-01-01 10:00:00+00') $$,
   '42501',
+  null,
   'authenticated no puede insertar directamente en resource_reservations'
 );
 

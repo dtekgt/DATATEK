@@ -10,7 +10,7 @@
 | Métrica | Real | Esperado |
 |---|---:|---:|
 | Tablas | 78 | 78 |
-| Migraciones | 13 | `0000`–`0090` |
+| Migraciones | 14 | `0000`–`0090` |
 | Tablas con RLS habilitada | 78 | 78 |
 | Entradas de registro de rutas | 58 | 58 |
 | Paths distintos servidos | 53 | 53 |

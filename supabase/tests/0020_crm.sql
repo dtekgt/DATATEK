@@ -109,6 +109,7 @@ select throws_ok(
     from new_customer
   $$,
   '23505',
+  null,
   'no se puede fusionar una segunda cuenta verificada al mismo usuario dentro de la misma organización'
 );
 
@@ -119,6 +120,7 @@ select throws_ok(
   $$ insert into customers (organization_id, display_name, source)
      values ('10000000-0000-0000-0000-000000000001', 'Intento directo', 'walk_in') $$,
   '42501',
+  null,
   'authenticated no puede insertar directamente en customers'
 );
 

@@ -95,6 +95,7 @@ select is(
 select throws_ok(
   $$ update vehicle_odometer_events set value_km = 1 where id = '70000000-0000-0000-0000-000000000011' $$,
   '42501',
+  null,
   'authenticated no puede modificar un evento de odómetro ya registrado (append-only)'
 );
 
@@ -104,6 +105,7 @@ select throws_ok(
 select throws_ok(
   $$ insert into vehicles (primary_vin) values ('1HGCM82633A004352') $$,
   '42501',
+  null,
   'authenticated no puede insertar directamente en vehicles'
 );
 

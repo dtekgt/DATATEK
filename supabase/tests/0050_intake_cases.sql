@@ -79,6 +79,7 @@ select throws_ok(
      values ('10000000-0000-0000-0000-000000000001', 1, '2026-00001-dup',
        '60000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001') $$,
   '23505',
+  null,
   'folio_number duplicado en la misma organización viola unique(organization_id, folio_number)'
 );
 
@@ -107,6 +108,7 @@ select throws_ok(
      values ('10000000-0000-0000-0000-000000000001', 999, '2026-00999',
        '60000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001') $$,
   '42501',
+  null,
   'authenticated no puede insertar directamente en cases'
 );
 
