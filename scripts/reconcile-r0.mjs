@@ -18,7 +18,11 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const WRITE = process.argv.includes("--write");
 
-const EXPECTED_TABLES = 78;
+// 78 hasta 0093 (v2.1 + Fase 0). 0094_product_catalog.sql (2026-08-04)
+// agrega product_catalog_items/product_catalog_versions — el catálogo de
+// productos que complementa a service_catalog_* (0040), diseñado por
+// organización desde el inicio en vez de neutral (ver cabecera de 0094).
+const EXPECTED_TABLES = 80;
 // R0-A sección 12 fija 58 entradas de registro. Eso NO es 58 archivos: cinco
 // paths están registrados dos veces y la diferencia importa, porque contar
 // archivos y llamarlo "58 rutas" da un número que cuadra por accidente.

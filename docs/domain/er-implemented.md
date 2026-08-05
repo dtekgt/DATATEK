@@ -9,9 +9,9 @@
 
 | Métrica | Real | Esperado |
 |---|---:|---:|
-| Tablas | 78 | 78 |
-| Migraciones | 14 | `0000`–`0090` |
-| Tablas con RLS habilitada | 78 | 78 |
+| Tablas | 80 | 80 |
+| Migraciones | 17 | `0000`–`0090` |
+| Tablas con RLS habilitada | 80 | 80 |
 | Entradas de registro de rutas | 58 | 58 |
 | Paths distintos servidos | 53 | 53 |
 
@@ -153,6 +153,13 @@ revisado estáticamente, no un `information_schema` consultado. Ver
 | `documents` | 8 | sí | `organizations`, `auth.users`, `cases` |
 | `document_versions` | 16 | sí | `document_versions`, `auth.users`, `documents` |
 
+## 0094_product_catalog.sql — `0094_product_catalog.sql`
+
+| Tabla | Columnas | RLS | Referencias a |
+|---|---:|:---:|---|
+| `product_catalog_items` | 11 | sí | `organizations` |
+| `product_catalog_versions` | 15 | sí | `auth.users`, `product_catalog_items` |
+
 ## Diagrama de relaciones
 
 ```mermaid
@@ -285,4 +292,6 @@ erDiagram
   organizations ||--o{ documents : ""
   cases ||--o{ documents : ""
   documents ||--o{ document_versions : ""
+  organizations ||--o{ product_catalog_items : ""
+  product_catalog_items ||--o{ product_catalog_versions : ""
 ```

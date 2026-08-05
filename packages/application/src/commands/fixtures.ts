@@ -28,6 +28,7 @@ import {
   type VehicleOwnershipClaimRow,
   type ResourceRow,
   type ServiceCatalogItemRow,
+  type ProductCatalogItemRow,
   type FeatureFlagRow,
   FEATURE_KEY_AUTHORIZATION_REISSUE,
 } from "./state.ts";
@@ -257,6 +258,64 @@ export function buildFixtureCrmVehicleState(): CrmVehicleState {
     },
   ];
 
+  // Fase 4a — ola `0094`. A diferencia de serviceCatalogItems (neutral),
+  // estas filas llevan organizationId — mismos productos que
+  // supabase/seeds/local_actors.sql para que el motor en memoria y Postgres
+  // cuenten la misma historia mientras no hay un adaptador real entre
+  // ambos. Uno de DTEK queda con quantityOnHand: 0 a propósito (mismo
+  // motivo que en el seed SQL: la UI futura necesita un caso "sin
+  // existencia" que no tenga que inventar).
+  const productCatalogItems: ProductCatalogItemRow[] = [
+    {
+      id: "prod-dtek-brake-pads",
+      organizationId: FIXTURE_ORGANIZATION_IDS.dtek,
+      sku: "DTEK-PAD-001",
+      category: "frenos",
+      name: "Pastillas de freno delanteras",
+      brand: "Brembo",
+      unit: "juego",
+      priceMode: "fixed",
+      fixedAmountMinor: 45000,
+      fromAmountMinor: null,
+      rangeMinAmountMinor: null,
+      rangeMaxAmountMinor: null,
+      currency: "GTQ",
+      quantityOnHand: 6,
+    },
+    {
+      id: "prod-dtek-engine-oil",
+      organizationId: FIXTURE_ORGANIZATION_IDS.dtek,
+      sku: "DTEK-OIL-005",
+      category: "lubricantes",
+      name: "Aceite de motor sintético 5W-30",
+      brand: "Mobil 1",
+      unit: "litro",
+      priceMode: "fixed",
+      fixedAmountMinor: 9500,
+      fromAmountMinor: null,
+      rangeMinAmountMinor: null,
+      rangeMaxAmountMinor: null,
+      currency: "GTQ",
+      quantityOnHand: 0,
+    },
+    {
+      id: "prod-demo-brake-pads",
+      organizationId: FIXTURE_ORGANIZATION_IDS.demo,
+      sku: "DEMO-PAD-001",
+      category: "frenos",
+      name: "Pastillas de freno traseras",
+      brand: "Bosch",
+      unit: "juego",
+      priceMode: "fixed",
+      fixedAmountMinor: 38000,
+      fromAmountMinor: null,
+      rangeMinAmountMinor: null,
+      rangeMaxAmountMinor: null,
+      currency: "GTQ",
+      quantityOnHand: 4,
+    },
+  ];
+
   // Fase 4a — ola `0086`. One real, checkable flag: `authorization_reissue`
   // gates `RevokeAndReprepareAuthorizationRequest`
   // (authorization-commands.ts). Both seeded organizations default to
@@ -305,6 +364,7 @@ export function buildFixtureCrmVehicleState(): CrmVehicleState {
     vehicleOwnershipClaims,
     resources,
     serviceCatalogItems,
+    productCatalogItems,
     featureFlags,
   };
 }

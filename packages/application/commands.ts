@@ -41,6 +41,7 @@ export * from "./src/queries/immediate-decisions.ts";
 export * from "./src/queries/pro-case-experience.ts";
 export * from "./src/queries/case-proof-summary.ts";
 export * from "./src/queries/service-price-presentation.ts";
+export * from "./src/queries/product-catalog.ts";
 
 // Instrumentación del motor (R0-E Fase 3). Vive aquí y no en el barrel
 // principal porque envuelve `commands/engine.ts` — importarla desde una

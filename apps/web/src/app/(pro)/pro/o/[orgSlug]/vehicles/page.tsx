@@ -12,6 +12,13 @@ import { getWebSession } from "../../../../../../lib/fixture-session";
 import { getCommandsEngine } from "../../../../../../lib/commands-engine";
 
 interface VehicleRow {
+  /** Fila = una relación de acceso (grant), no un vehículo — dos clientes
+   * distintos con un grant activo sobre el mismo vehículo físico (mismo VIN/
+   * placa, sección 5 "una coincidencia no confirma propietario") producen
+   * dos filas, no una que oculte a la segunda. `grantId` es la llave de
+   * React; `id` sigue siendo el del vehículo porque el detalle
+   * (`/vehicles/[vehicleId]`) es por vehículo, no por grant. */
+  grantId: string;
   id: string;
   label: string;
   plate: string;
@@ -34,18 +41,19 @@ export default async function ProVehiclesPage({
 
   if (session.accessState.kind === "allowed" && session.organizationId) {
     const organizationId = session.organizationId;
-    const grantByVehicle = new Map<string, (typeof state.vehicleAccessGrants)[number]>();
-    for (const grant of state.vehicleAccessGrants) {
-      if (
-        grant.organizationId === organizationId &&
-        grant.revokedAt === null &&
-        !grantByVehicle.has(grant.vehicleId)
-      ) {
-        grantByVehicle.set(grant.vehicleId, grant);
-      }
-    }
+    // Una fila por grant activo, no por vehículo: el mismo vehículo físico
+    // (mismo VIN/placa) puede tener un grant activo para más de un cliente
+    // en esta organización a la vez — RegisterVehicle nunca fusiona al
+    // coincidir (sección 5 "una coincidencia no confirma propietario"),
+    // solo agrega un nuevo grant. Deduplicar por vehicleId ocultaba en
+    // silencio a todos los clientes menos el del primer grant encontrado —
+    // hallado a mano el 2026-08-04 al abrir un caso para un cliente nuevo
+    // con una placa que ya tenía un grant de otro cliente.
+    const activeGrants = state.vehicleAccessGrants.filter(
+      (grant) => grant.organizationId === organizationId && grant.revokedAt === null,
+    );
 
-    rows = [...grantByVehicle.values()]
+    rows = activeGrants
       .flatMap((grant) => {
         const vehicle = state.vehicles.find((row) => row.id === grant.vehicleId);
         if (!vehicle) return [];
@@ -62,20 +70,29 @@ export default async function ProVehiclesPage({
           .sort((a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime())[0];
         return [
           {
+            grantId: grant.id,
             id: vehicle.id,
             label: buildVehicleLabel(vehicle),
             plate: vehicle.primaryPlate ?? "Sin placa",
             customerName: customer?.displayName ?? "Sin cliente relacionado",
             odometerKm: latestOdometer?.valueKm ?? null,
             odometerReadAt: latestOdometer?.recordedAt ?? null,
+            // Acotado al cliente de ESTE grant, no a todo el vehículo: si
+            // dos clientes comparten el vehículo, cada fila cuenta solo sus
+            // propios casos, para no sumarle a uno los casos del otro.
             cases: state.cases.filter(
-              (kase) => kase.organizationId === organizationId && kase.vehicleId === vehicle.id,
+              (kase) =>
+                kase.organizationId === organizationId &&
+                kase.vehicleId === vehicle.id &&
+                kase.customerId === grant.grantedToCustomerId,
             ).length,
             createdAt: vehicle.createdAt,
           },
         ];
       })
-      .sort((a, b) => a.label.localeCompare(b.label, "es"));
+      .sort(
+        (a, b) => a.label.localeCompare(b.label, "es") || a.customerName.localeCompare(b.customerName, "es"),
+      );
   }
 
   return (
@@ -105,7 +122,7 @@ export default async function ProVehiclesPage({
       ) : (
         <DataTable
           caption="Vehículos accesibles para este taller"
-          rowKey={(row) => row.id}
+          rowKey={(row) => row.grantId}
           rows={rows}
           columns={[
             {

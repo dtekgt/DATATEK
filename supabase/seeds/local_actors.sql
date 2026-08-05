@@ -125,7 +125,21 @@ insert into permissions (key, domain, description) values
   ('platform.audit.read', 'platform', 'Leer auditoría de plataforma'),
   ('platform.access.request', 'platform', 'Solicitar acceso elevado'),
   ('platform.access.approve', 'platform', 'Aprobar acceso elevado'),
-  ('platform.access.use', 'platform', 'Usar acceso elevado')
+  ('platform.access.use', 'platform', 'Usar acceso elevado'),
+  -- Introducidos por 0070_inspection_evidence.sql (evidence_assets_select
+  -- línea 541, evidence_links_select línea 551, evidence_assets_insert
+  -- línea 531) pero nunca agregados a este catálogo ni otorgados a ningún
+  -- rol — detectado el 2026-08-04 al ejecutar pgTAP por primera vez
+  -- (supabase/tests/0070_inspection_evidence.sql, caso "inspector DTEK
+  -- (evidence.read_internal) lee el evidence_asset"). Sin esta fila,
+  -- has_org_permission(_, 'evidence.read_internal') es estructuralmente
+  -- falso para cualquier actor: la política RLS estaba bien escrita, el
+  -- permiso que exige simplemente no existía.
+  ('evidence.upload', 'organization', 'Subir evidencia de inspección'),
+  ('evidence.read_internal', 'organization', 'Leer evidencia interna de inspección'),
+  -- Introducidos por 0094_product_catalog.sql.
+  ('parts.read', 'organization', 'Leer catálogo de productos/repuestos'),
+  ('parts.manage', 'organization', 'Administrar catálogo de productos/repuestos')
 on conflict (key) do nothing;
 
 insert into role_templates (key, label) values
@@ -149,16 +163,19 @@ insert into role_template_permissions (role_template_key, permission_key) values
   ('owner', 'inspection.read'), ('owner', 'inspection.publish'), ('owner', 'quote.read'), ('owner', 'quote.manage'),
   ('owner', 'authorization.request'), ('owner', 'authorization.decide'), ('owner', 'work.read'), ('owner', 'work.manage'),
   ('owner', 'quality.manage'), ('owner', 'finance.read'), ('owner', 'finance.manage'),
+  ('owner', 'parts.read'), ('owner', 'parts.manage'),
   ('advisor', 'organization.read'), ('advisor', 'membership.read'), ('advisor', 'catalog.read'),
   ('advisor', 'crm.read'), ('advisor', 'crm.manage'), ('advisor', 'vehicle.read'), ('advisor', 'vehicle.manage'),
   ('advisor', 'intake.read'), ('advisor', 'intake.manage'), ('advisor', 'agenda.read'), ('advisor', 'agenda.manage'),
   ('advisor', 'inspection.read'), ('advisor', 'quote.read'), ('advisor', 'quote.manage'),
-  ('advisor', 'authorization.request'), ('advisor', 'work.read'),
+  ('advisor', 'authorization.request'), ('advisor', 'work.read'), ('advisor', 'parts.read'),
   ('inspector', 'organization.read'), ('inspector', 'catalog.read'), ('inspector', 'vehicle.read'),
   ('inspector', 'inspection.read'), ('inspector', 'inspection.publish'), ('inspector', 'work.read'),
+  ('inspector', 'evidence.upload'), ('inspector', 'evidence.read_internal'),
   ('mechanic', 'organization.read'), ('mechanic', 'catalog.read'), ('mechanic', 'vehicle.read'),
-  ('mechanic', 'work.read'), ('mechanic', 'work.manage'),
+  ('mechanic', 'work.read'), ('mechanic', 'work.manage'), ('mechanic', 'parts.read'),
   ('cashier', 'organization.read'), ('cashier', 'catalog.read'), ('cashier', 'finance.read'), ('cashier', 'finance.manage'),
+  ('cashier', 'parts.read'),
   ('customer', 'crm.read')
 on conflict do nothing;
 
@@ -246,6 +263,13 @@ on conflict do nothing;
 -- 40000000-0000-0000-0000-000000000001 apuntando a Taller Demo. La única
 -- sesión elevada seed-ada cubre DTEK, con ticket/razón/vencimiento
 -- explícitos, para que el runbook de soporte tenga un ejemplo reproducible.
+--
+-- starts_at/expires_at son relativos a `now()`, no fechas absolutas: una
+-- fecha absoluta (antes '2026-08-01 08:00'/'20:00') queda "vencida" con el
+-- simple paso del calendario y has_active_support_session empieza a
+-- devolver false por una razón ajena a la función — encontrado el
+-- 2026-08-04 al ejecutar pgTAP por primera vez contra Postgres real
+-- (supabase/tests/0010_identity_tenancy.sql, caso "sesión elevada").
 insert into support_access_sessions (
   id, platform_membership_id, organization_id, ticket, reason, scope, status, starts_at, expires_at, approved_by
 ) values (
@@ -256,8 +280,8 @@ insert into support_access_sessions (
   'Cliente reporta folio no visible en Pro — investigar aislamiento',
   'read_only',
   'active',
-  '2026-08-01 08:00:00+00',
-  '2026-08-01 20:00:00+00',
+  now() - interval '4 hours',
+  now() + interval '8 hours',
   '00000000-0000-0000-0000-0000000000c2'
 )
 on conflict (id) do nothing;
@@ -437,4 +461,24 @@ on conflict (id) do nothing;
 
 insert into evidence_links (id, organization_id, asset_id, entity_type, entity_id, visibility, actor_id) values
   ('82000000-0000-0000-0000-000000000008', '10000000-0000-0000-0000-000000000001', '82000000-0000-0000-0000-000000000007', 'finding', '82000000-0000-0000-0000-000000000004', 'customer', '00000000-0000-0000-0000-0000000000a3')
+on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Catálogo de productos (0094_product_catalog.sql) — dos repuestos para
+-- DTEK Servicios (uno con existencia, uno agotado, para que la UI futura
+-- tenga un caso de "sin stock" que mostrar sin inventarlo) y uno para
+-- Taller Demo, suficiente para que supabase/tests/0094_product_catalog.sql
+-- pruebe aislamiento entre organizaciones.
+-- ---------------------------------------------------------------------------
+
+insert into product_catalog_items (id, organization_id, sku, category, name, description, brand, part_number, unit) values
+  ('83000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'DTEK-PAD-001', 'frenos', 'Pastillas de freno delanteras', 'Juego de pastillas delanteras, cerámicas.', 'Brembo', 'P85020N', 'juego'),
+  ('83000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'DTEK-OIL-005', 'lubricantes', 'Aceite de motor sintético 5W-30', 'Vendido por litro.', 'Mobil 1', null, 'litro'),
+  ('83000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000002', 'DEMO-PAD-001', 'frenos', 'Pastillas de freno traseras', 'Juego de pastillas traseras, semi-metálicas.', 'Bosch', 'BP905', 'juego')
+on conflict (id) do nothing;
+
+insert into product_catalog_versions (id, organization_id, catalog_item_id, version_number, price_mode, fixed_amount, currency, quantity_on_hand, status) values
+  ('83000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', '83000000-0000-0000-0000-000000000001', 1, 'fixed', 45000, 'GTQ', 6, 'active'),
+  ('83000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', '83000000-0000-0000-0000-000000000002', 1, 'fixed', 9500, 'GTQ', 0, 'active'),
+  ('83000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000002', '83000000-0000-0000-0000-000000000003', 1, 'fixed', 38000, 'GTQ', 4, 'active')
 on conflict (id) do nothing;

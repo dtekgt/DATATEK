@@ -738,6 +738,36 @@ export interface ServiceCatalogItemRow {
   note: string | null;
 }
 
+// --- Fase 4a: catálogo de productos (0094) para un futuro
+// getProductCatalogForOrg -----------------------------------------------
+// Mismo precedente que ServiceCatalogItemRow arriba: tabla real y sembrada
+// en Postgres (0094_product_catalog.sql), sin comando de escritura en el
+// motor de aplicación todavía — RegisterProduct/AdjustStock quedan para
+// cuando exista la pantalla /pro/parts que los necesite (mismo criterio que
+// `resources` antes de `CreateResource`). A diferencia del catálogo de
+// servicios, SÍ lleva `organizationId`: un repuesto es inventario de una
+// organización, no una taxonomía neutral (ver cabecera de la migración
+// 0094 para la justificación completa).
+export interface ProductCatalogItemRow {
+  id: string;
+  organizationId: string;
+  sku: string | null;
+  category: string;
+  name: string;
+  brand: string | null;
+  unit: string;
+  priceMode: ServicePriceMode;
+  fixedAmountMinor: number | null;
+  fromAmountMinor: number | null;
+  rangeMinAmountMinor: number | null;
+  rangeMaxAmountMinor: number | null;
+  currency: string;
+  /** Cantidad decimal, no entero — un litro de aceite puede venderse en
+   * fracciones (R0-A sección 4.14: "cantidades decimales con escala
+   * explícita"). */
+  quantityOnHand: number;
+}
+
 // --- Fase 4a: features (0086) -----------------------------------------------
 // SQL model in `supabase/migrations/0086_features.sql`. One real,
 // checkable flag: `authorization_reissue` gates
@@ -896,8 +926,9 @@ export interface CrmVehicleState {
   authorizations: AuthorizationRow[];
   authorizationItems: AuthorizationItemRow[];
   authorizationEvents: AuthorizationEventRow[];
-  // --- Fase 4a: catálogo mínimo (0040) + features (0086) ---
+  // --- Fase 4a: catálogo mínimo (0040) + productos (0094) + features (0086) ---
   serviceCatalogItems: ServiceCatalogItemRow[];
+  productCatalogItems: ProductCatalogItemRow[];
   featureFlags: FeatureFlagRow[];
   featureFlagOverrides: FeatureFlagOverrideRow[];
   idempotencyRecords: IdempotencyRecord[];
@@ -947,6 +978,7 @@ export function createEmptyState(): CrmVehicleState {
     authorizationItems: [],
     authorizationEvents: [],
     serviceCatalogItems: [],
+    productCatalogItems: [],
     featureFlags: [],
     featureFlagOverrides: [],
     idempotencyRecords: [],
