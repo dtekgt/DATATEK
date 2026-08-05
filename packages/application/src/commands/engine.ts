@@ -41,6 +41,7 @@ import {
   type QuoteItemRow,
   type AuthorizationRequestRow,
   type AuthorizationRow,
+  type ProductCatalogItemRow,
 } from "./state.ts";
 import {
   createProvisionalCustomer,
@@ -150,6 +151,12 @@ import {
   type OpenCaseFromRequestInput,
   type OpenCaseFromRequestOutput,
 } from "./open-case-journey.ts";
+import {
+  registerProduct,
+  adjustProductStock,
+  type RegisterProductInput,
+  type AdjustProductStockInput,
+} from "./product-catalog-commands.ts";
 
 export type CommandResult<T> =
   { ok: true; data: T; replayed: boolean } | { ok: false; error: CommandError };
@@ -309,6 +316,16 @@ export interface CommandEngine {
     ctx: CommandContext,
     input: RevokeAndReprepareAuthorizationRequestInput,
   ): CommandResult<RevokeAndReprepareAuthorizationRequestOutput>;
+
+  // --- Product catalog (Fase 4a, F0.5) ---
+  registerProduct(
+    ctx: CommandContext,
+    input: RegisterProductInput,
+  ): CommandResult<ProductCatalogItemRow>;
+  adjustProductStock(
+    ctx: CommandContext,
+    input: AdjustProductStockInput,
+  ): CommandResult<ProductCatalogItemRow>;
 }
 
 export function createCommandEngine(seed: CrmVehicleState = createEmptyState()): CommandEngine {
@@ -387,5 +404,8 @@ export function createCommandEngine(seed: CrmVehicleState = createEmptyState()):
     invalidateAuthorization: (ctx, input) => apply(invalidateAuthorization(state, ctx, input)),
     revokeAndReprepareAuthorizationRequest: (ctx, input) =>
       apply(revokeAndReprepareAuthorizationRequest(state, ctx, input)),
+
+    registerProduct: (ctx, input) => apply(registerProduct(state, ctx, input)),
+    adjustProductStock: (ctx, input) => apply(adjustProductStock(state, ctx, input)),
   };
 }

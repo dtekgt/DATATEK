@@ -15,6 +15,7 @@ import {
   FIXTURE_BRANCHES,
 } from "../../../../../../lib/fixture-session";
 import { getCommandsEngine } from "../../../../../../lib/commands-engine";
+import { NewProductForm } from "./new-product-form";
 
 interface ServiceCardData {
   id: string;
@@ -161,7 +162,12 @@ export default async function ProShopPage({ params }: { params: Promise<{ orgSlu
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold text-[var(--color-paper-50)]">Productos</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-[var(--color-paper-50)]">Productos</h2>
+          {session.permissions.includes("parts.manage") ? (
+            <NewProductForm orgSlug={orgSlug} />
+          ) : null}
+        </div>
         {products.length === 0 ? (
           <EmptyState
             title="Todavía no hay productos catalogados"

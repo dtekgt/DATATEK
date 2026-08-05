@@ -153,6 +153,9 @@ organization_permissions:
   - quality.manage
   - finance.read
   - finance.manage
+  # 0094 — catálogo de productos/repuestos, por organización.
+  - parts.read
+  - parts.manage
 
 platform_permissions:
   - platform.control.enter
@@ -203,6 +206,8 @@ organization_role_templates:
     - quality.manage
     - finance.read
     - finance.manage
+    - parts.read
+    - parts.manage
   advisor:
     - organization.read
     - membership.read
@@ -224,6 +229,7 @@ organization_role_templates:
     - quote.manage
     - authorization.request
     - work.read
+    - parts.read
   inspector:
     - organization.read
     - catalog.read
@@ -239,11 +245,13 @@ organization_role_templates:
     - vehicle.read
     - work.read
     - work.manage
+    - parts.read
   cashier:
     - organization.read
     - catalog.read
     - finance.read
     - finance.manage
+    - parts.read
   customer:
     - crm.read
 
