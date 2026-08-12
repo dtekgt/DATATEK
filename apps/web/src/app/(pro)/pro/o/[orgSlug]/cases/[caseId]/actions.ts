@@ -100,7 +100,7 @@ export async function prepareAndSendAuthorizationRequest(
     };
   }
 
-  const ctx = buildStaffCommandContext({ actorId: session.actorId, orgSlug });
+  const ctx = await buildStaffCommandContext({ actorId: session.actorId, orgSlug });
   if (!ctx) return { status: "error", message: "Organización no encontrada." };
 
   const engine = getCommandsEngine();
@@ -113,7 +113,7 @@ export async function prepareAndSendAuthorizationRequest(
     return { status: "error", message: prepared.error.message };
   }
 
-  const sendCtx = buildStaffCommandContext({ actorId: session.actorId, orgSlug });
+  const sendCtx = await buildStaffCommandContext({ actorId: session.actorId, orgSlug });
   if (!sendCtx) return { status: "error", message: "Organización no encontrada." };
   const sent = engine.markAuthorizationRequestSent(sendCtx, {
     authorizationRequestId: prepared.data.request.id,
@@ -166,7 +166,7 @@ export async function reissueAndSendAuthorizationRequest(
     };
   }
 
-  const ctx = buildStaffCommandContext({ actorId: session.actorId, orgSlug });
+  const ctx = await buildStaffCommandContext({ actorId: session.actorId, orgSlug });
   if (!ctx) return { status: "error", message: "Organización no encontrada." };
 
   const engine = getCommandsEngine();
@@ -178,7 +178,7 @@ export async function reissueAndSendAuthorizationRequest(
     return { status: "error", message: reissued.error.message };
   }
 
-  const sendCtx = buildStaffCommandContext({ actorId: session.actorId, orgSlug });
+  const sendCtx = await buildStaffCommandContext({ actorId: session.actorId, orgSlug });
   if (!sendCtx) return { status: "error", message: "Organización no encontrada." };
   const sent = engine.markAuthorizationRequestSent(sendCtx, {
     authorizationRequestId: reissued.data.request.id,

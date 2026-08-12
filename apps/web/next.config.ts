@@ -12,7 +12,20 @@ const isDev = process.env.NODE_ENV !== "production";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["@datatek/ui", "@datatek/application", "@datatek/domain", "@datatek/auth"],
+  transpilePackages: [
+    "@datatek/ui",
+    "@datatek/application",
+    "@datatek/domain",
+    "@datatek/auth",
+    "@datatek/database",
+  ],
+  // `pg` usa detección opcional de bindings nativos (pg-native) en tiempo de
+  // import — dejar que webpack intente empaquetarlo en el bundle del
+  // servidor produce fallos crípticos en este entorno (SWC nativo bloqueado,
+  // fallback WASM). Server-external evita el bundling: en runtime Node lo
+  // resuelve directo, igual que ya hacen scripts/apply-migrations.mjs y
+  // run-pgtap.mjs fuera de Next.js.
+  serverExternalPackages: ["pg"],
   typescript: {
     // `pnpm typecheck` runs `tsc --noEmit` across every workspace package
     // (including this one) as its own gate. Next's in-build type check uses

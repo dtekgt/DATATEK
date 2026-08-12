@@ -12,6 +12,14 @@ import {
   FIXTURE_ACTOR_IDS,
   FIXTURE_PROFILES,
 } from "@datatek/application";
+import {
+  loadActorTenancySnapshot,
+  resolveOrganizationBySlug,
+  loadOrganizationsByIds,
+  loadOrganizationBranches,
+} from "@datatek/database";
+import { getPostgresPool, isPostgresEnabled } from "./commands-engine";
+import { getSupabaseServerClient } from "./supabase-server";
 
 // R0-C fixture identity — Supabase Auth local is written and seed-ready
 // (see supabase/seeds/local_actors.sql and
@@ -122,13 +130,112 @@ export function resolveWebSession(
   };
 }
 
-/** Server-only: reads the fixture actor cookie. Never falls back to a query
- * string or header — the only implicit signal this sandbox allows itself is
- * an httpOnly cookie set by the fixture `/login` form. */
+/** Equivalente real de `resolveWebSession` — mismo contrato
+ * (`WebSessionResolution`), pero `actorId` es el UUID de una sesión real de
+ * Supabase Auth y la tenencia sale de Postgres real
+ * (`loadActorTenancySnapshot`) en vez de `TENANCY_SNAPSHOT` fixture.
+ * `resolveOrganizationCapabilities`/`resolveAccessBoundaryState` no
+ * cambian — reciben el mismo `TenancySnapshot`, solo que cargado de
+ * verdad. */
+async function resolveRealWebSession(
+  actorId: string | null,
+  orgSlug: string,
+  requiredPermission: OrganizationPermission | undefined,
+  now: Date = new Date(),
+): Promise<WebSessionResolution> {
+  if (!actorId) {
+    return {
+      actorId: null,
+      actorDisplayName: "Invitado",
+      organizationId: null,
+      organizationSlug: null,
+      availableOrganizations: [],
+      branchScope: [],
+      availableBranches: [],
+      permissions: [],
+      accessState: resolveAccessBoundaryState({ sessionStatus: "unauthenticated" }),
+    };
+  }
+
+  const pool = getPostgresPool();
+  const [snapshot, org] = await Promise.all([
+    loadActorTenancySnapshot(pool, actorId),
+    resolveOrganizationBySlug(pool, orgSlug),
+  ]);
+
+  const activeOrgIds = snapshot.memberships
+    .filter((m) => m.status === "active")
+    .map((m) => m.organizationId);
+  const availableOrgsRaw = await loadOrganizationsByIds(pool, activeOrgIds);
+  const availableOrganizations = availableOrgsRaw.map((o) => ({
+    id: o.id,
+    slug: o.slug,
+    label: o.name,
+    meta: "",
+  }));
+
+  const actorProfile = snapshot.profiles.find((p) => p.userId === actorId);
+
+  if (!org) {
+    const accessState = resolveAccessBoundaryState({
+      sessionStatus: "authenticated",
+      organization: {
+        organizationId: orgSlug,
+        resolution: { membershipStatus: "missing", membershipId: null, permissions: [], branchScope: [] },
+      },
+    });
+    return {
+      actorId,
+      actorDisplayName: actorProfile?.displayName ?? actorId,
+      organizationId: null,
+      organizationSlug: null,
+      availableOrganizations,
+      branchScope: [],
+      availableBranches: [],
+      permissions: [],
+      accessState,
+    };
+  }
+
+  const resolution = resolveOrganizationCapabilities(actorId, org.id, now, snapshot);
+  const accessState = resolveAccessBoundaryState({
+    sessionStatus: "authenticated",
+    organization: { organizationId: org.id, resolution, requiredPermission },
+  });
+  const availableBranches =
+    resolution.membershipStatus === "active"
+      ? await loadOrganizationBranches(pool, actorId, org.id)
+      : [];
+
+  return {
+    actorId,
+    actorDisplayName: actorProfile?.displayName ?? actorId,
+    organizationId: org.id,
+    organizationSlug: org.slug,
+    availableOrganizations,
+    branchScope: resolution.branchScope,
+    availableBranches,
+    permissions: resolution.permissions,
+    accessState,
+  };
+}
+
+/** Server-only. Con `DATATEK_PERSISTENCE=postgres` lee la sesión real de
+ * Supabase Auth (`supabase.auth.getUser()`); si no, lee la cookie fixture
+ * `dtek_actor` como siempre. Nunca cae a query string ni header en
+ * ninguno de los dos caminos. */
 export async function getWebSession(
   orgSlug: string,
   requiredPermission?: OrganizationPermission,
 ): Promise<WebSessionResolution> {
+  if (isPostgresEnabled()) {
+    const supabase = await getSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return resolveRealWebSession(user?.id ?? null, orgSlug, requiredPermission);
+  }
+
   const { cookies } = await import("next/headers");
   const store = await cookies();
   const actorId = store.get(SESSION_COOKIE_NAME)?.value ?? null;

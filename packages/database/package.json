@@ -15,9 +15,16 @@
     "test:vitest": "vitest run",
     "build": "tsc --noEmit"
   },
+  "dependencies": {
+    "@datatek/application": "workspace:*",
+    "@datatek/auth": "workspace:*",
+    "@datatek/domain": "workspace:*",
+    "pg": "^8.22.0"
+  },
   "devDependencies": {
     "@datatek/config": "workspace:*",
     "@types/node": "26.1.2",
+    "@types/pg": "^8.11.6",
     "expect": "30.4.1",
     "typescript": "5.9.3",
     "vitest": "4.1.10"

@@ -10,11 +10,19 @@
 import { resolveOrganizationCapabilities } from "@datatek/auth";
 import { buildFixtureTenancySnapshot, FIXTURE_ORGANIZATIONS } from "@datatek/application";
 import { buildCommandContext, type CommandContext } from "@datatek/application/commands";
+import {
+  loadActorTenancySnapshot,
+  resolveOrganizationBySlug as resolveRealOrgBySlug,
+} from "@datatek/database";
+import { getPostgresPool, isPostgresEnabled } from "./commands-engine";
 
 const TENANCY_SNAPSHOT = buildFixtureTenancySnapshot();
 
-/** Resolves `orgSlug` -> org id/label — the same lookup every Pro page
- * already does against `FIXTURE_ORGANIZATIONS` (R0-C fixture tenancy). */
+/** Resolves `orgSlug` -> org id/label against fixture tenancy. Still used
+ * by Pass (`pass-actor.ts`, out of Puerta A's scope) regardless of the
+ * `DATATEK_PERSISTENCE` gate — `buildStaffCommandContext` below has its own
+ * real-Postgres org resolution and does NOT call this when the gate is
+ * active. */
 export function resolveOrgBySlug(orgSlug: string) {
   return FIXTURE_ORGANIZATIONS.find((o) => o.slug === orgSlug) ?? null;
 }
@@ -22,17 +30,42 @@ export function resolveOrgBySlug(orgSlug: string) {
 /** Builds a `CommandContext` for a staff actor already resolved by
  * `getWebSession` — never trusts an `actorId`/`organizationId` supplied by
  * client input. Returns `null` only when `orgSlug` does not resolve to a
- * seeded organization (defensive; every caller already validated this via
- * `getWebSession` before reaching here). */
-export function buildStaffCommandContext(params: {
+ * known organization (defensive; every caller already validated this via
+ * `getWebSession` before reaching here).
+ *
+ * Async because the `DATATEK_PERSISTENCE=postgres` path loads the org and
+ * the actor's tenancy snapshot from real Postgres (`@datatek/database`) —
+ * the fixture path below stays synchronous-shaped but is awaited by every
+ * caller regardless, so both paths share one signature. */
+export async function buildStaffCommandContext(params: {
   actorId: string;
   orgSlug: string;
   branchId?: string | null;
   now?: Date;
-}): CommandContext | null {
+}): Promise<CommandContext | null> {
+  const now = params.now ?? new Date();
+
+  if (isPostgresEnabled()) {
+    const pool = getPostgresPool();
+    const [org, snapshot] = await Promise.all([
+      resolveRealOrgBySlug(pool, params.orgSlug),
+      loadActorTenancySnapshot(pool, params.actorId),
+    ]);
+    if (!org) return null;
+    const capabilities = resolveOrganizationCapabilities(params.actorId, org.id, now, snapshot);
+    return buildCommandContext({
+      actorId: params.actorId,
+      organizationId: org.id,
+      branchId: params.branchId ?? null,
+      capabilities,
+      idempotencyKey: globalThis.crypto.randomUUID(),
+      correlationId: globalThis.crypto.randomUUID(),
+      now,
+    });
+  }
+
   const org = resolveOrgBySlug(params.orgSlug);
   if (!org) return null;
-  const now = params.now ?? new Date();
   const capabilities = resolveOrganizationCapabilities(
     params.actorId,
     org.id,

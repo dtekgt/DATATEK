@@ -13,10 +13,14 @@
   "dependencies": {
     "@datatek/application": "workspace:*",
     "@datatek/auth": "workspace:*",
+    "@datatek/database": "workspace:*",
     "@datatek/domain": "workspace:*",
     "@datatek/ui": "workspace:*",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.58.0",
     "lucide-react": "1.28.0",
     "next": "16.2.12",
+    "pg": "^8.22.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "zod": "4.4.3"
@@ -27,6 +31,7 @@
     "@tailwindcss/postcss": "4.3.3",
     "expect": "30.4.1",
     "@types/node": "26.1.2",
+    "@types/pg": "^8.11.6",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "postcss": "8.5.25",

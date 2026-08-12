@@ -131,7 +131,7 @@ export async function registerProductFromShop(
     };
   }
 
-  const ctx = buildStaffCommandContext({
+  const ctx = await buildStaffCommandContext({
     actorId: session.actorId,
     orgSlug: data.orgSlug,
     branchId: session.availableBranches[0]?.id ?? null,

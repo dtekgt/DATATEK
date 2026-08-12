@@ -100,7 +100,7 @@ export async function openCaseFromPro(
     };
   }
 
-  const ctx = buildStaffCommandContext({
+  const ctx = await buildStaffCommandContext({
     actorId: session.actorId,
     orgSlug: data.orgSlug,
     branchId: session.availableBranches[0]?.id ?? null,
@@ -126,7 +126,7 @@ export async function openCaseFromPro(
         } as const)
       : ({ kind: "existing", vehicleId: data.vehicleSelection } as const);
 
-  const opened = getCommandsEngine().openCaseFromRequest(ctx, {
+  const opened = await getCommandsEngine().openCaseFromRequest(ctx, {
     customer,
     vehicle,
     channel: data.intakeChannel as IntakeChannel,

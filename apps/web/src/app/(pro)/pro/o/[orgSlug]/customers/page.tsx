@@ -8,7 +8,7 @@ import {
   StatusPill,
 } from "@datatek/ui";
 import { getWebSession } from "../../../../../../lib/fixture-session";
-import { getCommandsEngine } from "../../../../../../lib/commands-engine";
+import { getReadState } from "../../../../../../lib/commands-engine";
 
 interface CustomerRow {
   id: string;
@@ -27,10 +27,10 @@ export default async function ProCustomersPage({
 }) {
   const { orgSlug } = await params;
   const session = await getWebSession(orgSlug, "crm.read");
-  const state = getCommandsEngine().getState();
   let rows: CustomerRow[] = [];
 
-  if (session.accessState.kind === "allowed" && session.organizationId) {
+  if (session.accessState.kind === "allowed" && session.organizationId && session.actorId) {
+    const state = await getReadState(session.actorId, session.organizationId);
     rows = state.customers
       .filter((customer) => customer.organizationId === session.organizationId)
       .map((customer) => {

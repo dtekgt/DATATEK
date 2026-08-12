@@ -11,7 +11,7 @@ import {
   StatusPill,
 } from "@datatek/ui";
 import { getWebSession } from "../../../../../../../lib/fixture-session";
-import { getCommandsEngine } from "../../../../../../../lib/commands-engine";
+import { getReadState } from "../../../../../../../lib/commands-engine";
 
 export default async function ProCustomerDetailPage({
   params,
@@ -20,10 +20,11 @@ export default async function ProCustomerDetailPage({
 }) {
   const { orgSlug, customerId } = await params;
   const session = await getWebSession(orgSlug, "crm.read");
-  const state = getCommandsEngine().getState();
 
-  if (session.accessState.kind !== "allowed" || !session.organizationId) notFound();
+  if (session.accessState.kind !== "allowed" || !session.organizationId || !session.actorId)
+    notFound();
   const organizationId = session.organizationId;
+  const state = await getReadState(session.actorId, organizationId);
   const customer = state.customers.find(
     (row) => row.id === customerId && row.organizationId === organizationId,
   );

@@ -2,7 +2,7 @@ import { buildVehicleLabel, getProCaseExperience } from "@datatek/application/co
 import { getCaseListViewModel } from "@datatek/application";
 import { Badge, DataTable, DateTimeText, LinkButton, PageTitle, StatusPill } from "@datatek/ui";
 import { getWebSession } from "../../../../../../lib/fixture-session";
-import { getCommandsEngine } from "../../../../../../lib/commands-engine";
+import { getReadState } from "../../../../../../lib/commands-engine";
 import { NewCaseForm } from "./new-case-form";
 
 interface CaseRow {
@@ -40,7 +40,7 @@ export default async function ProCasesPage({
       actorId: session.actorId,
       now: new Date(),
     };
-    const state = getCommandsEngine().getState();
+    const state = await getReadState(session.actorId, session.organizationId);
     customerOptions = state.customers
       .filter((customer) => customer.organizationId === session.organizationId)
       .map((customer) => ({ id: customer.id, label: customer.displayName }))

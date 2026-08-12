@@ -19,7 +19,7 @@ import {
   Tabs,
 } from "@datatek/ui";
 import { getWebSession } from "../../../../../../../lib/fixture-session";
-import { getCommandsEngine } from "../../../../../../../lib/commands-engine";
+import { getCommandsEngine, getReadState } from "../../../../../../../lib/commands-engine";
 import { PrepareAuthorizationRequestForm } from "./prepare-authorization-form";
 
 const LIVE_REQUEST_STATUSES = new Set(["prepared", "sent", "viewed"]);
@@ -70,8 +70,10 @@ export default async function ProCaseWorkspacePage({
   // out of the rendered DOM.
   const session = await getWebSession(orgSlug, "intake.read");
 
-  const engine = getCommandsEngine();
-  const state = engine.getState();
+  // Fallback síncrono para cuando accessState no es "allowed" — `state` solo
+  // se usa de verdad más abajo (para `vm`/`proof`/`timeline`) cuando SÍ lo
+  // es, y ahí se reasigna con la lectura real (ver `getReadState`).
+  let state = getCommandsEngine().getState();
 
   let vm = null as ReturnType<typeof getProCaseExperience>;
   let proof = null as ReturnType<typeof getCaseProofSummary>;
@@ -83,6 +85,7 @@ export default async function ProCaseWorkspacePage({
   let canReissueRequest = false;
 
   if (session.accessState.kind === "allowed" && session.organizationId && session.actorId) {
+    state = await getReadState(session.actorId, session.organizationId);
     const ctx = {
       organizationId: session.organizationId,
       audience: "pro" as const,

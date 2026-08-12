@@ -146,7 +146,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.createProvisionalCustomer(ctx, parsedInput.data);
+      result = await engine.createProvisionalCustomer(ctx, parsedInput.data);
       break;
     }
     case "AddCustomerContact": {
@@ -157,7 +157,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.addCustomerContact(ctx, parsedInput.data);
+      result = await engine.addCustomerContact(ctx, parsedInput.data);
       break;
     }
     case "LinkCustomerAuthIdentity": {
@@ -168,7 +168,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.linkCustomerAuthIdentity(ctx, parsedInput.data);
+      result = await engine.linkCustomerAuthIdentity(ctx, parsedInput.data);
       break;
     }
     case "RegisterVehicle": {
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.registerVehicle(ctx, parsedInput.data);
+      result = await engine.registerVehicle(ctx, parsedInput.data);
       break;
     }
     case "CreateVehicleOwnershipClaim": {
@@ -190,7 +190,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.createVehicleOwnershipClaim(ctx, parsedInput.data);
+      result = await engine.createVehicleOwnershipClaim(ctx, parsedInput.data);
       break;
     }
     case "RecordOdometerEvent": {
@@ -201,7 +201,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.recordOdometerEvent(ctx, parsedInput.data);
+      result = await engine.recordOdometerEvent(ctx, parsedInput.data);
       break;
     }
     case "CreateManualIntake": {
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.createManualIntake(ctx, parsedInput.data);
+      result = await engine.createManualIntake(ctx, parsedInput.data);
       break;
     }
     case "AppendIntakeEntry": {
@@ -223,7 +223,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.appendIntakeEntry(ctx, parsedInput.data);
+      result = await engine.appendIntakeEntry(ctx, parsedInput.data);
       break;
     }
     case "InterpretReportedSymptom": {
@@ -234,7 +234,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.interpretReportedSymptom(ctx, parsedInput.data);
+      result = await engine.interpretReportedSymptom(ctx, parsedInput.data);
       break;
     }
     case "CreateCaseFromIntake": {
@@ -245,7 +245,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.createCaseFromIntake(ctx, parsedInput.data);
+      result = await engine.createCaseFromIntake(ctx, parsedInput.data);
       break;
     }
     case "AssignCaseParticipant": {
@@ -256,7 +256,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.assignCaseParticipant(ctx, parsedInput.data);
+      result = await engine.assignCaseParticipant(ctx, parsedInput.data);
       break;
     }
     case "TransitionCase": {
@@ -267,7 +267,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.transitionCase(ctx, parsedInput.data);
+      result = await engine.transitionCase(ctx, parsedInput.data);
       break;
     }
     case "AddCaseNote": {
@@ -278,7 +278,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.addCaseNote(ctx, parsedInput.data);
+      result = await engine.addCaseNote(ctx, parsedInput.data);
       break;
     }
     case "CreateTemporaryReservation": {
@@ -289,7 +289,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.createTemporaryReservation(ctx, parsedInput.data);
+      result = await engine.createTemporaryReservation(ctx, parsedInput.data);
       break;
     }
     case "ScheduleAppointment": {
@@ -300,7 +300,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.scheduleAppointment(ctx, parsedInput.data);
+      result = await engine.scheduleAppointment(ctx, parsedInput.data);
       break;
     }
     case "ConfirmAppointment": {
@@ -311,7 +311,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.confirmAppointment(ctx, parsedInput.data);
+      result = await engine.confirmAppointment(ctx, parsedInput.data);
       break;
     }
     case "CancelAppointment": {
@@ -322,7 +322,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.cancelAppointment(ctx, parsedInput.data);
+      result = await engine.cancelAppointment(ctx, parsedInput.data);
       break;
     }
     case "ReceiveVehicle": {
@@ -333,7 +333,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.receiveVehicle(ctx, parsedInput.data);
+      result = await engine.receiveVehicle(ctx, parsedInput.data);
       break;
     }
     case "StartInspection": {
@@ -344,7 +344,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.startInspection(ctx, parsedInput.data);
+      result = await engine.startInspection(ctx, parsedInput.data);
       break;
     }
     case "RecordInspectionResult": {
@@ -355,7 +355,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.recordInspectionResult(ctx, parsedInput.data);
+      result = await engine.recordInspectionResult(ctx, parsedInput.data);
       break;
     }
     case "RecordMeasurement": {
@@ -366,7 +366,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.recordMeasurement(ctx, parsedInput.data);
+      result = await engine.recordMeasurement(ctx, parsedInput.data);
       break;
     }
     case "RecordFinding": {
@@ -377,7 +377,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.recordFinding(ctx, parsedInput.data);
+      result = await engine.recordFinding(ctx, parsedInput.data);
       break;
     }
     case "CreateMaintenanceRecommendation": {
@@ -388,7 +388,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.createMaintenanceRecommendation(ctx, parsedInput.data);
+      result = await engine.createMaintenanceRecommendation(ctx, parsedInput.data);
       break;
     }
     case "CreateUploadIntent": {
@@ -399,7 +399,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.createUploadIntent(ctx, parsedInput.data);
+      result = await engine.createUploadIntent(ctx, parsedInput.data);
       break;
     }
     case "ConfirmEvidenceUpload": {
@@ -410,7 +410,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.confirmEvidenceUpload(ctx, parsedInput.data);
+      result = await engine.confirmEvidenceUpload(ctx, parsedInput.data);
       break;
     }
     case "LinkEvidence": {
@@ -421,7 +421,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.linkEvidence(ctx, parsedInput.data);
+      result = await engine.linkEvidence(ctx, parsedInput.data);
       break;
     }
     case "CompleteInspection": {
@@ -432,7 +432,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.completeInspection(ctx, parsedInput.data);
+      result = await engine.completeInspection(ctx, parsedInput.data);
       break;
     }
     case "CreateQuote": {
@@ -443,7 +443,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.createQuote(ctx, parsedInput.data);
+      result = await engine.createQuote(ctx, parsedInput.data);
       break;
     }
     case "CreateQuoteVersion": {
@@ -454,7 +454,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.createQuoteVersion(ctx, parsedInput.data);
+      result = await engine.createQuoteVersion(ctx, parsedInput.data);
       break;
     }
     case "AddQuoteItem": {
@@ -465,7 +465,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.addQuoteItem(ctx, parsedInput.data);
+      result = await engine.addQuoteItem(ctx, parsedInput.data);
       break;
     }
     case "UpdateDraftQuoteItem": {
@@ -476,7 +476,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.updateDraftQuoteItem(ctx, parsedInput.data);
+      result = await engine.updateDraftQuoteItem(ctx, parsedInput.data);
       break;
     }
     case "FreezeQuoteVersion": {
@@ -487,7 +487,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.freezeQuoteVersion(ctx, parsedInput.data);
+      result = await engine.freezeQuoteVersion(ctx, parsedInput.data);
       break;
     }
     case "PrepareAuthorizationRequest": {
@@ -498,7 +498,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.prepareAuthorizationRequest(ctx, parsedInput.data);
+      result = await engine.prepareAuthorizationRequest(ctx, parsedInput.data);
       break;
     }
     case "MarkAuthorizationRequestSent": {
@@ -509,7 +509,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.markAuthorizationRequestSent(ctx, parsedInput.data);
+      result = await engine.markAuthorizationRequestSent(ctx, parsedInput.data);
       break;
     }
     case "VerifyAuthorizationAccess": {
@@ -520,7 +520,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.verifyAuthorizationAccess(ctx, parsedInput.data);
+      result = await engine.verifyAuthorizationAccess(ctx, parsedInput.data);
       break;
     }
     case "RecordAuthorization": {
@@ -531,7 +531,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.recordAuthorization(ctx, parsedInput.data);
+      result = await engine.recordAuthorization(ctx, parsedInput.data);
       break;
     }
     case "InvalidateAuthorization": {
@@ -542,7 +542,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.invalidateAuthorization(ctx, parsedInput.data);
+      result = await engine.invalidateAuthorization(ctx, parsedInput.data);
       break;
     }
     case "RevokeAndReprepareAuthorizationRequest": {
@@ -553,7 +553,7 @@ export async function POST(request: Request) {
           { status: 400 },
         );
       }
-      result = engine.revokeAndReprepareAuthorizationRequest(ctx, parsedInput.data);
+      result = await engine.revokeAndReprepareAuthorizationRequest(ctx, parsedInput.data);
       break;
     }
   }

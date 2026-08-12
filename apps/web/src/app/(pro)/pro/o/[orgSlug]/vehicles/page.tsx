@@ -9,7 +9,7 @@ import {
   PageTitle,
 } from "@datatek/ui";
 import { getWebSession } from "../../../../../../lib/fixture-session";
-import { getCommandsEngine } from "../../../../../../lib/commands-engine";
+import { getReadState } from "../../../../../../lib/commands-engine";
 
 interface VehicleRow {
   /** Fila = una relación de acceso (grant), no un vehículo — dos clientes
@@ -36,11 +36,11 @@ export default async function ProVehiclesPage({
 }) {
   const { orgSlug } = await params;
   const session = await getWebSession(orgSlug, "vehicle.read");
-  const state = getCommandsEngine().getState();
   let rows: VehicleRow[] = [];
 
-  if (session.accessState.kind === "allowed" && session.organizationId) {
+  if (session.accessState.kind === "allowed" && session.organizationId && session.actorId) {
     const organizationId = session.organizationId;
+    const state = await getReadState(session.actorId, organizationId);
     // Una fila por grant activo, no por vehículo: el mismo vehículo físico
     // (mismo VIN/placa) puede tener un grant activo para más de un cliente
     // en esta organización a la vez — RegisterVehicle nunca fusiona al

@@ -12,7 +12,7 @@ import {
   StatusPill,
 } from "@datatek/ui";
 import { getWebSession } from "../../../../../../lib/fixture-session";
-import { getCommandsEngine } from "../../../../../../lib/commands-engine";
+import { getReadState } from "../../../../../../lib/commands-engine";
 
 interface DashboardCaseRow {
   id: string;
@@ -31,11 +31,11 @@ export default async function ProDashboardPage({
 }) {
   const { orgSlug } = await params;
   const session = await getWebSession(orgSlug, "intake.read");
-  const state = getCommandsEngine().getState();
 
   let rows: DashboardCaseRow[] = [];
   let organizationName = "Taller";
   if (session.accessState.kind === "allowed" && session.organizationId && session.actorId) {
+    const state = await getReadState(session.actorId, session.organizationId);
     organizationName =
       session.availableOrganizations.find((org) => org.id === session.organizationId)?.label ??
       "Taller";
