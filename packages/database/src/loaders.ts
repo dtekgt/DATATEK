@@ -191,6 +191,17 @@ async function loadCaseById(
   }));
 }
 
+/** `for update` — sin esto, dos transacciones concurrentes para la misma
+ * organización pueden hacer el mismo SELECT antes de que cualquiera haga
+ * COMMIT, calcular el mismo `nextValue` en `consumeOrganizationCounter`, y
+ * la segunda `INSERT INTO cases` termina en `23505 duplicate key` sobre
+ * `cases_organization_id_folio_number_key`. El lock de fila hace que la
+ * segunda transacción bloquee aquí hasta que la primera haga commit/rollback,
+ * y entonces relea el valor ya avanzado — igual que un `SELECT ... FOR
+ * UPDATE` clásico de "lee para incrementar". Solo esta tabla lo necesita:
+ * es la única en Puerta A donde el valor de una fila nueva depende de leer
+ * e incrementar una fila existente bajo escritores concurrentes.
+ */
 async function loadOrganizationCounter(
   client: pg.PoolClient,
   organizationId: string,
@@ -198,7 +209,8 @@ async function loadOrganizationCounter(
 ): Promise<CrmVehicleState["organizationCounters"]> {
   const { rows } = await client.query(
     `select organization_id, counter_key, next_value
-       from organization_counters where organization_id = $1 and counter_key = $2`,
+       from organization_counters where organization_id = $1 and counter_key = $2
+       for update`,
     [organizationId, counterKey],
   );
   return rows.map((r) => ({
