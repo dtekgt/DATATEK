@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { routesForSurface, isHiddenForRole, type ActorRole } from "@datatek/domain";
 import { BottomNav, type BottomNavItem } from "@datatek/ui";
 import { RouteIcon } from "../lib/icon";
+import { BrandMark } from "./brand-mark";
 
 export function MarketShell({
   children,
@@ -27,13 +28,14 @@ export function MarketShell({
 
   return (
     <div className="flex min-h-screen flex-col pb-24 md:pb-0">
+      <div aria-hidden className="dtek-grid-bg" />
       <header className="sticky top-0 z-30 border-b border-white/8 bg-[var(--surface-app)]/94 backdrop-blur-xl">
         <nav
           aria-label="Navegación de Market"
           className="mx-auto flex min-h-16 max-w-6xl items-center gap-4 px-4"
         >
-          <a href="/market" className="text-sm font-bold tracking-[0.12em]">
-            DATATEK MARKET
+          <a href="/market" className="focus-ring rounded-[var(--radius-control)]">
+            <BrandMark subtitle="Encuentra un taller de confianza" />
           </a>
           <ul className="ml-auto hidden items-center gap-1 text-sm md:flex">
             {routes.map((r) => (

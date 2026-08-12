@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { BottomNav, VehicleContextRail, type BottomNavItem } from "@datatek/ui";
 import { RouteIcon } from "../lib/icon";
 import { routesForSurface } from "@datatek/domain";
+import { BrandMark } from "./brand-mark";
 
 export interface PassShellProps {
   activeRouteId: string;
@@ -33,13 +34,9 @@ export function PassShell({ activeRouteId, children, vehicleRail }: PassShellPro
 
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col pb-24">
+      <div aria-hidden className="dtek-grid-bg" />
       <header className="flex items-center gap-2 px-4 py-4">
-        <div>
-          <span className="text-sm font-bold tracking-[0.12em]">DATATEK PASS</span>
-          <p className="mt-0.5 text-[11px] text-[var(--color-muted-400)]">
-            Tu vehículo · no el panel del taller
-          </p>
-        </div>
+        <BrandMark subtitle="Tu vehículo · no el panel del taller" />
       </header>
       {vehicleRail ? (
         <div className="sticky top-0 z-20 bg-[var(--surface-app)]/95 px-4 py-2 backdrop-blur">

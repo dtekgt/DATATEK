@@ -73,6 +73,13 @@
   --shadow-card: 0 28px 80px rgba(0, 0, 0, 0.38);
   --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.26);
   --glow-accent: 0 0 20px rgba(227, 32, 37, 0.55);
+
+  /* Textura de grid de marca (guideline "Grid Texture" del design system) —
+     capa de fondo casi imperceptible que aparece en toda pantalla oscura de
+     cara al conductor/mercado. Nunca se usó fuera de Pro porque Pro nunca
+     tuvo esta capa portada; Pass/Market sí la necesitan. */
+  --grid-line: rgba(255, 255, 255, 0.055);
+  --grid-size: 72px;
   --neu-raised: 7px 7px 16px var(--color-neu-shadow), -5px -5px 12px var(--color-neu-highlight);
   --neu-raised-sm: 4px 4px 10px var(--color-neu-shadow), -3px -3px 8px var(--color-neu-highlight);
   --neu-raised-lg:
@@ -128,6 +135,25 @@ body {
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Textura de grid de marca — copiada del guideline "Grid Texture" del design
+   system (claude.ai/design, proyecto D-TEK GT). `position:fixed` + z-index
+   negativo la deja detrás de todo el contenido de la superficie que la use;
+   el degradado de máscara la desvanece hacia abajo para que no compita con
+   texto largo. */
+.dtek-grid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 78%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent 78%);
 }
 
 /* Minimum tap target, sección 5.3 */
