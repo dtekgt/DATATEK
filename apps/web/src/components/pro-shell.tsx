@@ -15,6 +15,7 @@ import {
 import { RouteIcon } from "../lib/icon";
 import { routesForSurface, findRouteById } from "@datatek/domain";
 import type { WebSessionResolution } from "../lib/fixture-session";
+import { PRO_ROUTE_PERMISSION } from "../lib/pro-nav-permissions";
 
 const BOTTOM_NAV_IDS = ["pro.dashboard", "pro.cases", "pro.calendar", "pro.shop"];
 
@@ -45,7 +46,12 @@ export function ProShell({ orgSlug, session, children }: ProShellProps) {
   const activeRouteId = matchRouteId(pathname, orgSlug);
   const title = findRouteById(activeRouteId)?.label ?? "Datatek Pro";
 
-  const routes = routesForSurface("pro");
+  const canSeeRoute = (routeId: string): boolean => {
+    const required = PRO_ROUTE_PERMISSION[routeId];
+    return required == null || session.permissions.includes(required);
+  };
+
+  const routes = routesForSurface("pro").filter((r) => canSeeRoute(r.id));
   const navItems: NavItem[] = routes
     .filter((r) => r.navVisible)
     .map((r) => ({
@@ -55,6 +61,12 @@ export function ProShell({ orgSlug, session, children }: ProShellProps) {
       icon: <RouteIcon name={r.icon} className="h-5 w-5" />,
       active: r.id === activeRouteId,
     }));
+
+  // "Más" agrupa todo lo que no cabe en las 4 pestañas fijas de abajo — debe
+  // apuntar a la primera ruta que ESTE actor puede ver, no siempre
+  // Configuración (un rol sin `organization.manage`, como mecánico o
+  // cajero, no puede entrar ahí y antes se topaba con acceso denegado).
+  const moreTarget = routes.find((r) => r.navVisible && !BOTTOM_NAV_IDS.includes(r.id));
 
   const bottomItems: BottomNavItem[] = [
     ...routes
@@ -69,9 +81,11 @@ export function ProShell({ orgSlug, session, children }: ProShellProps) {
     {
       id: "pro.more",
       label: "Más",
-      href: `/pro/o/${orgSlug}/settings`,
+      href: moreTarget
+        ? moreTarget.path.replace("[orgSlug]", orgSlug)
+        : `/pro/o/${orgSlug}/dashboard`,
       icon: <RouteIcon name="MoreHorizontal" className="h-5 w-5" />,
-      active: activeRouteId === "pro.settings",
+      active: moreTarget != null && activeRouteId === moreTarget.id,
     },
   ];
 

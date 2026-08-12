@@ -24,17 +24,44 @@ interface DashboardCaseRow {
   updatedAt: string;
 }
 
+/** Estados que le importan a un rol que trabaja el vehículo (mecánico,
+ * inspector) — a diferencia de owner/advisor, no incluye
+ * `waiting_authorization`/`ready`, que son decisiones del asesor con el
+ * cliente, no trabajo de piso. */
+const WORK_FLOOR_STATUSES: readonly CaseStatus[] = [
+  "received",
+  "inspection",
+  "in_progress",
+  "blocked",
+  "quality",
+  "ready_for_delivery",
+];
+
 export default async function ProDashboardPage({
   params,
 }: {
   params: Promise<{ orgSlug: string }>;
 }) {
   const { orgSlug } = await params;
-  const session = await getWebSession(orgSlug, "intake.read");
+  // Gate universal (todo rol activo tiene `organization.read`) — el
+  // contenido de abajo se adapta a lo que el permiso real del actor le deja
+  // ver, en vez de bloquear el aterrizaje entero como antes (`intake.read`
+  // dejaba fuera a mecánico/cajero/inspector desde el primer clic tras
+  // iniciar sesión).
+  const session = await getWebSession(orgSlug, "organization.read");
+
+  const hasIntakeRead = session.permissions.includes("intake.read");
+  const hasIntakeManage = session.permissions.includes("intake.manage");
+  const hasWorkRead = session.permissions.includes("work.read");
 
   let rows: DashboardCaseRow[] = [];
   let organizationName = "Taller";
-  if (session.accessState.kind === "allowed" && session.organizationId && session.actorId) {
+  if (
+    session.accessState.kind === "allowed" &&
+    session.organizationId &&
+    session.actorId &&
+    (hasIntakeRead || hasWorkRead)
+  ) {
     const state = await getReadState(session.actorId, session.organizationId);
     organizationName =
       session.availableOrganizations.find((org) => org.id === session.organizationId)?.label ??
@@ -48,6 +75,7 @@ export default async function ProDashboardPage({
 
     rows = state.cases
       .filter((kase) => kase.organizationId === session.organizationId)
+      .filter((kase) => hasIntakeRead || WORK_FLOOR_STATUSES.includes(kase.status))
       .map((kase): DashboardCaseRow | null => {
         const experience = getProCaseExperience(state, ctx, kase.id);
         if (!experience) return null;
@@ -59,7 +87,10 @@ export default async function ProDashboardPage({
         return {
           id: kase.id,
           code: kase.folioCode,
-          customerName: customer?.displayName ?? "Cliente",
+          // `crm.read` es lo que gobierna ver el nombre del cliente
+          // (mismo permiso que la página de Clientes) — un mecánico o
+          // inspector sin ese permiso ve el vehículo, no a quién pertenece.
+          customerName: hasIntakeRead ? customer?.displayName ?? "Cliente" : "—",
           vehicleLabel: vehicle ? buildVehicleLabel(vehicle) : "Vehículo",
           status: kase.status,
           nextAction: experience.nextAction.primaryAction,
@@ -68,11 +99,39 @@ export default async function ProDashboardPage({
       })
       .filter((row): row is DashboardCaseRow => row != null)
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  } else if (session.accessState.kind === "allowed" && session.organizationId) {
+    organizationName =
+      session.availableOrganizations.find((org) => org.id === session.organizationId)?.label ??
+      "Taller";
   }
+
+  const roleView: "operacion" | "piso" | "otro" = hasIntakeRead
+    ? "operacion"
+    : hasWorkRead
+      ? "piso"
+      : "otro";
 
   const openCases = rows.filter((row) => row.status !== "closed").length;
   const waiting = rows.filter((row) => row.status === "waiting_authorization").length;
   const ready = rows.filter((row) => row.status === "ready").length;
+  const blocked = rows.filter((row) => row.status === "blocked").length;
+  const inProgress = rows.filter((row) => row.status === "in_progress").length;
+  const readyForDelivery = rows.filter((row) => row.status === "ready_for_delivery").length;
+
+  const statCards =
+    roleView === "operacion"
+      ? [
+          { label: "En operación", value: openCases },
+          { label: "Esperando al cliente", value: waiting },
+          { label: "Autorizados para seguir", value: ready },
+        ]
+      : roleView === "piso"
+        ? [
+            { label: "En trabajo", value: inProgress },
+            { label: "Bloqueados", value: blocked },
+            { label: "Listos para entrega", value: readyForDelivery },
+          ]
+        : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -84,46 +143,63 @@ export default async function ProDashboardPage({
           </div>
           <PageTitle className="mt-3">Hoy en {organizationName}</PageTitle>
           <p className="mt-2 text-sm text-[var(--color-muted-400)]">
-            La vista de trabajo para recibir vehículos, mover casos y solicitar decisiones.
+            {roleView === "operacion"
+              ? "La vista de trabajo para recibir vehículos, mover casos y solicitar decisiones."
+              : roleView === "piso"
+                ? "Los vehículos que están en piso ahora mismo — sin datos de cliente ni de negocio."
+                : "Todavía no hay una vista para tu rol en esta organización."}
           </p>
         </div>
-        <LinkButton href={`/pro/o/${orgSlug}/cases?new=1`} variant="primary">
-          Abrir caso
-        </LinkButton>
+        {hasIntakeManage ? (
+          <LinkButton href={`/pro/o/${orgSlug}/cases?new=1`} variant="primary">
+            Abrir caso
+          </LinkButton>
+        ) : null}
       </header>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Card>
-          <p className="text-xs uppercase text-[var(--color-muted-400)]">En operación</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums">{openCases}</p>
-        </Card>
-        <Card>
-          <p className="text-xs uppercase text-[var(--color-muted-400)]">Esperando al cliente</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums">{waiting}</p>
-        </Card>
-        <Card>
-          <p className="text-xs uppercase text-[var(--color-muted-400)]">Autorizados para seguir</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums">{ready}</p>
-        </Card>
-      </div>
+      {statCards.length > 0 ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {statCards.map((stat) => (
+            <Card key={stat.label}>
+              <p className="text-xs uppercase text-[var(--color-muted-400)]">{stat.label}</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums">{stat.value}</p>
+            </Card>
+          ))}
+        </div>
+      ) : null}
 
       <section>
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-[var(--color-muted-400)]">
-          Trabajo reciente
+          {roleView === "piso" ? "Vehículos en piso" : "Trabajo reciente"}
         </h2>
-        {rows.length === 0 ? (
+        {roleView === "otro" ? (
           <EmptyState
-            title="Todavía no hay trabajo capturado"
-            description="Abre el primer caso con los datos mínimos del cliente y el vehículo."
+            title="Sin vista operativa para tu rol todavía"
+            description="Tu membresía no tiene permisos sobre casos ni trabajo de taller. Si esto no es correcto, pide a tu administrador que revise tu rol en Configuración."
+          />
+        ) : rows.length === 0 ? (
+          <EmptyState
+            title={
+              roleView === "piso"
+                ? "Sin vehículos en piso ahora mismo"
+                : "Todavía no hay trabajo capturado"
+            }
+            description={
+              roleView === "piso"
+                ? "Cuando un caso pase a trabajo activo, aparecerá aquí."
+                : "Abre el primer caso con los datos mínimos del cliente y el vehículo."
+            }
             action={
-              <LinkButton href={`/pro/o/${orgSlug}/cases?new=1`} variant="secondary" size="sm">
-                Capturar primer caso
-              </LinkButton>
+              hasIntakeManage ? (
+                <LinkButton href={`/pro/o/${orgSlug}/cases?new=1`} variant="secondary" size="sm">
+                  Capturar primer caso
+                </LinkButton>
+              ) : undefined
             }
           />
         ) : (
           <DataTable
-            caption="Casos recientes del taller"
+            caption={roleView === "piso" ? "Vehículos en piso" : "Casos recientes del taller"}
             rowKey={(row) => row.id}
             rows={rows.slice(0, 8)}
             columns={[
@@ -136,7 +212,9 @@ export default async function ProDashboardPage({
                   </LinkButton>
                 ),
               },
-              { key: "customer", header: "Cliente", render: (row) => row.customerName },
+              ...(roleView === "operacion"
+                ? [{ key: "customer", header: "Cliente", render: (row: DashboardCaseRow) => row.customerName }]
+                : []),
               { key: "vehicle", header: "Vehículo", render: (row) => row.vehicleLabel },
               {
                 key: "status",
