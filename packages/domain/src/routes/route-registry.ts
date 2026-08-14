@@ -257,13 +257,6 @@ const proRoutes: RouteEntry[] = [
     telemetry: "pro.calendar.view",
     emptyState: "Sin citas programadas.",
     breadcrumbs: ["Pro", "Agenda"],
-    planned: {
-      purpose: "Administrar tiempo y recursos de citas sin sustituir el caso.",
-      dependency: R0D,
-      release: "r0-d",
-      dataToBeUsed: "Citas, recursos y disponibilidad por sucursal.",
-      whyDisabled: "La agenda funcional queda fuera de alcance de R0-B.",
-    },
   },
   {
     id: "pro.shop",
