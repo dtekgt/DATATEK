@@ -12,8 +12,8 @@
 | Tablas | 80 | 80 |
 | Migraciones | 17 | `0000`–`0090` |
 | Tablas con RLS habilitada | 80 | 80 |
-| Entradas de registro de rutas | 58 | 58 |
-| Paths distintos servidos | 53 | 53 |
+| Entradas de registro de rutas | 59 | 59 |
+| Paths distintos servidos | 54 | 54 |
 
 Las migraciones son artefactos **autorizados pero no ejecutados** en esta
 máquina: no hay Docker ni Supabase CLI, así que este ER refleja el SQL fuente

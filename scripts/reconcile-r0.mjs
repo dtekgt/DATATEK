@@ -32,7 +32,12 @@ const EXPECTED_TABLES = 80;
 //     (marketing para el visitante, experiencia real para el usuario).
 //
 // De ahí: 58 entradas → 53 paths distintos → 56 archivos `page.tsx`.
-const EXPECTED_REGISTRY_ENTRIES = 58;
+//
+// +1 tras R0-A: `pro.market-requests` (/pro/o/[orgSlug]/market-requests) es
+// una ruta real y nueva — el lado del taller para responder solicitudes de
+// cotización de invitado creadas desde /market/request — no contemplada en
+// la sección 12 original. 59 entradas → 54 paths distintos → 57 archivos.
+const EXPECTED_REGISTRY_ENTRIES = 59;
 
 // ===========================================================================
 // Rutas

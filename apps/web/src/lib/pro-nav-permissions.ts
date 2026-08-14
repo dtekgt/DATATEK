@@ -18,6 +18,7 @@ export const PRO_ROUTE_PERMISSION: Partial<Record<string, OrganizationPermission
   "pro.cases": "intake.read",
   "pro.case-workspace": "intake.read",
   "pro.calendar": "agenda.read",
+  "pro.market-requests": "quote.read",
   "pro.shop": "catalog.read",
   "pro.customers": "crm.read",
   "pro.customer-detail": "crm.read",

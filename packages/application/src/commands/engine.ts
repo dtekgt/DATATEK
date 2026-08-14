@@ -42,6 +42,8 @@ import {
   type AuthorizationRequestRow,
   type AuthorizationRow,
   type ProductCatalogItemRow,
+  type MarketQuoteRequestRow,
+  type MarketOfferRow,
 } from "./state.ts";
 import {
   createProvisionalCustomer,
@@ -157,6 +159,14 @@ import {
   type RegisterProductInput,
   type AdjustProductStockInput,
 } from "./product-catalog-commands.ts";
+import {
+  createMarketQuoteRequest,
+  submitMarketOffer,
+  respondToMarketOffer,
+  type CreateMarketQuoteRequestInput,
+  type SubmitMarketOfferInput,
+  type RespondToMarketOfferInput,
+} from "./market-request-commands.ts";
 
 export type CommandResult<T> =
   { ok: true; data: T; replayed: boolean } | { ok: false; error: CommandError };
@@ -326,6 +336,17 @@ export interface CommandEngine {
     ctx: CommandContext,
     input: AdjustProductStockInput,
   ): CommandResult<ProductCatalogItemRow>;
+
+  // --- Market: solicitudes de cotización de invitado ---
+  createMarketQuoteRequest(
+    ctx: CommandContext,
+    input: CreateMarketQuoteRequestInput,
+  ): CommandResult<MarketQuoteRequestRow>;
+  submitMarketOffer(ctx: CommandContext, input: SubmitMarketOfferInput): CommandResult<MarketOfferRow>;
+  respondToMarketOffer(
+    ctx: CommandContext,
+    input: RespondToMarketOfferInput,
+  ): CommandResult<MarketQuoteRequestRow>;
 }
 
 export function createCommandEngine(seed: CrmVehicleState = createEmptyState()): CommandEngine {
@@ -407,5 +428,9 @@ export function createCommandEngine(seed: CrmVehicleState = createEmptyState()):
 
     registerProduct: (ctx, input) => apply(registerProduct(state, ctx, input)),
     adjustProductStock: (ctx, input) => apply(adjustProductStock(state, ctx, input)),
+
+    createMarketQuoteRequest: (ctx, input) => apply(createMarketQuoteRequest(state, ctx, input)),
+    submitMarketOffer: (ctx, input) => apply(submitMarketOffer(state, ctx, input)),
+    respondToMarketOffer: (ctx, input) => apply(respondToMarketOffer(state, ctx, input)),
   };
 }

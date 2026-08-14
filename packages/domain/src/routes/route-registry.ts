@@ -259,6 +259,20 @@ const proRoutes: RouteEntry[] = [
     breadcrumbs: ["Pro", "Agenda"],
   },
   {
+    id: "pro.market-requests",
+    surface: "pro",
+    label: "Solicitudes de Market",
+    path: "/pro/o/[orgSlug]/market-requests",
+    icon: "Inbox",
+    release: "r0-d",
+    permission: "quote.read",
+    featureFlag: null,
+    navVisible: true,
+    telemetry: "pro.market-requests.view",
+    emptyState: "Sin solicitudes de Market todavía.",
+    breadcrumbs: ["Pro", "Solicitudes de Market"],
+  },
+  {
     id: "pro.shop",
     surface: "pro",
     label: "Taller",
@@ -648,13 +662,6 @@ const marketRoutes: RouteEntry[] = [
     telemetry: "market.request.view",
     emptyState: "No aplica.",
     breadcrumbs: ["Market", "Nueva solicitud"],
-    planned: {
-      purpose: "Originar una solicitud de servicio sin modificar el expediente operativo.",
-      dependency: R0D,
-      release: "r0-d",
-      dataToBeUsed: "Datos del vehículo y necesidad declarada por el conductor.",
-      whyDisabled: "Escribir solicitudes reales queda fuera de alcance de R0-B.",
-    },
   },
   {
     id: "market.requests",
@@ -669,13 +676,6 @@ const marketRoutes: RouteEntry[] = [
     telemetry: "market.requests.view",
     emptyState: "Sin solicitudes todavía.",
     breadcrumbs: ["Market", "Mis solicitudes"],
-    planned: {
-      purpose: "Seguimiento de solicitudes originadas en Market.",
-      dependency: R0D,
-      release: "r0-d",
-      dataToBeUsed: "Solicitudes y su estado de atención por taller.",
-      whyDisabled: "Depende de la creación real de solicitudes.",
-    },
   },
   {
     id: "market.supplier.opportunities",

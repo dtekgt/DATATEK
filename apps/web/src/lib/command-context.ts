@@ -82,3 +82,32 @@ export async function buildStaffCommandContext(params: {
     now,
   });
 }
+
+const GUEST_ACTOR_ID = "market-guest" as const;
+
+/** Builds a `CommandContext` for an anonymous Market visitor — no session,
+ * no membership. Only `createMarketQuoteRequest`/`respondToMarketOffer`
+ * (market-request-commands.ts) accept this: neither calls
+ * `requirePermission`, so the fabricated `capabilities` below only exists
+ * to satisfy the type — see `dtek-invitado-sin-garage`: pedir cuenta antes
+ * de la acción principal mata la conversión, así que este flujo nunca pasa
+ * por `getWebSession`. Resolves against the same org registry as
+ * `resolveOrgBySlug` — Market workshop slugs are identical to org slugs
+ * (`FIXTURE_ORGANIZATIONS`), so no separate mapping is needed. */
+export function buildGuestCommandContext(params: {
+  orgSlug: string;
+  now?: Date;
+}): CommandContext | null {
+  const org = resolveOrgBySlug(params.orgSlug);
+  if (!org) return null;
+  const now = params.now ?? new Date();
+  return buildCommandContext({
+    actorId: GUEST_ACTOR_ID,
+    organizationId: org.id,
+    branchId: null,
+    capabilities: { membershipStatus: "missing", membershipId: null, permissions: [], branchScope: [] },
+    idempotencyKey: globalThis.crypto.randomUUID(),
+    correlationId: globalThis.crypto.randomUUID(),
+    now,
+  });
+}

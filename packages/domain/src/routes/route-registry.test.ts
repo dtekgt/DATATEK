@@ -50,8 +50,8 @@ const webAppDir = path.join(repoRoot, "apps", "web", "src", "app");
 const controlAppDir = path.join(repoRoot, "apps", "control", "src", "app");
 
 describe("route registry", () => {
-  it("has exactly 58 canonical entries", () => {
-    expect(ROUTE_REGISTRY.length).toBe(58);
+  it("has exactly 59 canonical entries", () => {
+    expect(ROUTE_REGISTRY.length).toBe(59);
   });
 
   it("has no duplicate ids", () => {
@@ -87,7 +87,7 @@ describe("route registry", () => {
       counts[bucket] = (counts[bucket] ?? 0) + 1;
     }
     expect(counts.public).toBe(12);
-    expect(counts.pro).toBe(15);
+    expect(counts.pro).toBe(16);
     expect(counts.pass).toBe(9); // 8 Pass + /a/[token]
     expect(counts.market).toBe(9);
     expect(counts.control).toBe(13);

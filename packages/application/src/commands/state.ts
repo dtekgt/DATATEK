@@ -768,6 +768,45 @@ export interface ProductCatalogItemRow {
   quantityOnHand: number;
 }
 
+// --- Market: solicitudes de cotización de invitado ------------------------
+// Nuevo dominio (no forma parte de las Fases R0-D existentes): un cliente
+// anónimo navegando /market pide presupuesto a un taller sin crear cuenta —
+// misma regla de producto que agendar en DTEK GT ("invitado sin Garage"), la
+// conversión muere si se exige login antes de la acción principal. El
+// taller responde con UNA oferta; el cliente la acepta o rechaza usando su
+// folio + teléfono como comprobante liviano (no es autenticación real, es
+// el mismo patrón de "código de seguimiento" que un pedido de invitado).
+
+export type MarketRequestStatus = "submitted" | "offered" | "accepted" | "rejected";
+
+export interface MarketQuoteRequestRow {
+  id: string;
+  organizationId: string;
+  folioCode: string;
+  status: MarketRequestStatus;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string | null;
+  vehicleLabel: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MarketOfferRow {
+  id: string;
+  organizationId: string;
+  requestId: string;
+  amountMinor: number;
+  currency: string;
+  message: string | null;
+  createdAt: string;
+  createdBy: string;
+  respondedAt: string | null;
+  respondedStatus: "accepted" | "rejected" | null;
+  rejectionReason: string | null;
+}
+
 // --- Fase 4a: features (0086) -----------------------------------------------
 // SQL model in `supabase/migrations/0086_features.sql`. One real,
 // checkable flag: `authorization_reissue` gates
@@ -931,6 +970,9 @@ export interface CrmVehicleState {
   productCatalogItems: ProductCatalogItemRow[];
   featureFlags: FeatureFlagRow[];
   featureFlagOverrides: FeatureFlagOverrideRow[];
+  // --- Market: solicitudes de cotización de invitado ---
+  marketQuoteRequests: MarketQuoteRequestRow[];
+  marketOffers: MarketOfferRow[];
   idempotencyRecords: IdempotencyRecord[];
   auditLog: AuditEventRecord[];
   organizationCounters: OrganizationCounterRecord[];
@@ -981,6 +1023,8 @@ export function createEmptyState(): CrmVehicleState {
     productCatalogItems: [],
     featureFlags: [],
     featureFlagOverrides: [],
+    marketQuoteRequests: [],
+    marketOffers: [],
     idempotencyRecords: [],
     auditLog: [],
     organizationCounters: [],

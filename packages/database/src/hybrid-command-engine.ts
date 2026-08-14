@@ -119,5 +119,9 @@ export function createHybridCommandEngine(
 
     registerProduct: async (ctx, input) => mem.registerProduct(ctx, input),
     adjustProductStock: async (ctx, input) => mem.adjustProductStock(ctx, input),
+
+    createMarketQuoteRequest: async (ctx, input) => mem.createMarketQuoteRequest(ctx, input),
+    submitMarketOffer: async (ctx, input) => mem.submitMarketOffer(ctx, input),
+    respondToMarketOffer: async (ctx, input) => mem.respondToMarketOffer(ctx, input),
   };
 }
