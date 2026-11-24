@@ -157,8 +157,9 @@ begin
       (select string_agg(v_nombres ->> m, ', ') from unnest(v_mal) m) || coalesce(' · ' || nullif(trim(coalesce(p_nota, '')), ''), ''), 200),
       'unidad', p_unidad, v_cli, now());
   end if;
-  insert into public.flota_inspecciones (unidad_id, persona_id, items, todo_bien, km, nota, evento_id)
-  values (p_unidad, auth.uid(), p_items, v_bien, p_km, nullif(left(trim(coalesce(p_nota, '')), 300), ''), v_ev) returning id into v_id;
+  -- clock_timestamp: dos inspecciones en la misma transacción quedan en orden.
+  insert into public.flota_inspecciones (unidad_id, persona_id, items, todo_bien, km, nota, evento_id, en)
+  values (p_unidad, auth.uid(), p_items, v_bien, p_km, nullif(left(trim(coalesce(p_nota, '')), 300), ''), v_ev, clock_timestamp()) returning id into v_id;
   perform public.dt_bitacora_anotar(v_neg, 'unidad', p_unidad, case when v_bien then 'inspeccion_bien' else 'inspeccion_con_falla' end,
     jsonb_build_object('inspeccion', v_id, 'mal', to_jsonb(coalesce(v_mal, '{}'::text[])), 'evento', v_ev));
   return jsonb_build_object('todo_bien', v_bien, 'km', v_km, 'falla', v_ev);

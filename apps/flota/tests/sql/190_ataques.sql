@@ -108,3 +108,42 @@ select prueba.afirmar((select respuesta from public.orden_lineas where id = :'li
 select prueba.como(:'piloto'); set role authenticated;
 select prueba.afirmar(public.dt_flota_reportar_km(:'unidad', 10) = 'menor_al_anterior', '26 · km hacia atrás queda marcado y no pisa');
 reset role;
+
+-- 27. Ficha, pilotos e inspección (Flota 107): otro taller, un ajeno o el piloto no las usan para cruzar datos
+select id as piloto_id from public.pilotos where telefono = '+50255550011' \gset
+select prueba.como(:'piloto'); set role authenticated;
+select public.dt_flota_reportar_falla(:'unidad', 'Luz del motor encendida') as evento_id \gset
+reset role;
+select prueba.como(:'dueno2'); set role authenticated;
+select prueba.debe_fallar($$ select public.dt_flota_ficha('$$ || :'unidad' || $$') $$, '27a · el dueño B no lee la ficha de una unidad de A');
+select prueba.debe_fallar($$ select public.dt_flota_unidad_baja('$$ || :'unidad_b' || $$', true, 'Sabotaje del otro taller') $$, '27b · el dueño B no da de baja unidades de A');
+select prueba.debe_fallar($$ select public.dt_flota_piloto_editar('$$ || :'piloto_id' || $$', null, null, null, false) $$, '27c · el dueño B no edita pilotos de A');
+reset role;
+select prueba.como(:'atacante'); set role authenticated;
+select prueba.debe_fallar($$ select public.dt_flota_inspeccion('$$ || :'unidad' || $$', '{"luces":true,"llantas":true,"frenos":true,"aceite":true,"tablero":true}', 1, null) $$,
+  '27d · un ajeno no firma inspecciones ni mueve el km');
+select prueba.debe_fallar($$ select public.dt_flota_piloto_resumen('$$ || :'unidad' || $$') $$, '27e · un ajeno no lee el resumen del piloto');
+reset role;
+select prueba.como(:'piloto'); set role authenticated;
+select prueba.debe_fallar($$ select public.dt_flota_ficha('$$ || :'unidad' || $$') $$, '27f · el piloto no lee la ficha con teléfonos y montos');
+select prueba.debe_fallar($$ select public.dt_flota_inspeccion('$$ || :'unidad_b' || $$', '{"luces":true,"llantas":true,"frenos":true,"aceite":true,"tablero":true}', null, null) $$,
+  '27g · el piloto no inspecciona otra unidad');
+reset role;
+-- 28. Portal de la empresa y «Hoy» (Flota 108)
+select prueba.como(:'dueno2'); set role authenticated;
+select prueba.debe_fallar($$ select * from public.dt_flota_vencimientos('$$ || :'flota' || $$') $$, '28a · el dueño B no lee lo que vence en A');
+select prueba.debe_fallar($$ select * from public.dt_flota_disponibilidad('$$ || :'flota' || $$') $$, '28b · ni la disponibilidad y el costo');
+select prueba.debe_fallar($$ select * from public.dt_flota_avisos('$$ || :'neg' || $$') $$, '28c · ni los avisos de A');
+select prueba.debe_fallar($$ select public.dt_flota_agendar_visita('$$ || :'flota' || $$', array['$$ || :'unidad' || $$']::uuid[], now() + interval '1 day', 'Visita falsa') $$,
+  '28d · ni agenda visitas en A');
+select prueba.debe_fallar($$ select public.dt_flota_orden_datos('$$ || :'orden' || $$', null, null, 'urgente') $$, '28e · ni cambia datos de órdenes de A');
+select prueba.debe_fallar($$ select public.dt_flota_recordar_cotizacion('$$ || :'orden' || $$') $$, '28f · ni gasta mensajes de A recordando');
+select prueba.debe_fallar($$ select * from public.dt_flota_tecnicos('$$ || :'neg' || $$') $$, '28g · ni lista el equipo de A');
+reset role;
+select prueba.como(:'atacante'); set role authenticated;
+select prueba.debe_fallar($$ select public.dt_flota_solicitar_servicio('$$ || :'unidad' || $$', 'Servicio inventado') $$, '28h · un ajeno no pide servicios por la empresa');
+select prueba.debe_fallar($$ select * from public.dt_flota_pilotos('$$ || :'flota' || $$') $$, '28i · un ajeno no lee los teléfonos de los pilotos');
+reset role;
+select prueba.como(:'gerente'); set role authenticated;
+select prueba.debe_fallar($$ select public.dt_flota_atender_aviso('$$ || :'evento_id' || $$', true, null) $$, '28j · la empresa no abre órdenes por el taller');
+reset role;
