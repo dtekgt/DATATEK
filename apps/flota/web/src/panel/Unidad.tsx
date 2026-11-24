@@ -17,6 +17,8 @@ export function UnidadPanel() {
   const salud = useCarga(() => Flota.salud(id!), [id])
   const piezas = useCarga(() => Flota.piezas(id!), [id])
   const recargar = () => { ficha.recargar(); salud.recargar(); piezas.recargar() }
+  const [verTodas, setVerTodas] = useState(false)
+  const sinDatos = (piezas.datos || []).filter((p) => p.tono === 'sin_datos').length
   if (ficha.error) return <p className="error-texto">{ficha.error}</p>
   if (!ficha.datos) return <p className="cargando">Cargando la unidad…</p>
   const f = ficha.datos
@@ -41,10 +43,11 @@ export function UnidadPanel() {
             <div className="fila-entre"><h2>Salud por pieza</h2>{s && <span className="suave chico">{s.conocidas} de {s.total} conocidas · {s.ahora} ahora · {s.cerca} cerca</span>}</div>
             {s?.proximo_nombre && <p className="chico" style={{ margin: '6px 0' }}><b>Lo próximo:</b> {s.proximo_nombre} · {s.proximo_detalle}</p>}
             <div className="lista-filas">
-              {(piezas.datos || []).map((p) => (
+              {(piezas.datos || []).filter((p) => verTodas || p.tono !== 'sin_datos').map((p) => (
                 <div key={p.componente} className="fila-dato"><div><div className="titulo">{p.nombre}</div><div className="sub">{p.detalle}</div></div><Chip tono={TONO_PIEZA[p.tono].tono}>{TONO_PIEZA[p.tono].texto}</Chip></div>
               ))}
             </div>
+            {sinDatos > 0 && <button className="btn-texto" style={{ alignSelf: 'flex-start', marginTop: 8 }} onClick={() => setVerTodas((v) => !v)}>{verTodas ? 'Ocultar las piezas sin datos' : `Ver ${sinDatos} piezas sin datos`}</button>}
             {u.estado !== 'baja' && <AnotarPieza unidad={u.id} km={u.km} alGuardar={recargar} />}
           </section>
           <Historial f={f} />

@@ -18,6 +18,8 @@ const MiFlota = lazy(() => import('./cliente/MiFlota').then((m) => ({ default: m
 const UnidadCliente = lazy(() => import('./cliente/Unidad').then((m) => ({ default: m.UnidadCliente })))
 const OrdenCliente = lazy(() => import('./cliente/Orden').then((m) => ({ default: m.OrdenCliente })))
 const OrdenesCliente = lazy(() => import('./cliente/Ordenes').then((m) => ({ default: m.OrdenesCliente })))
+const Vence = lazy(() => import('./cliente/Vence').then((m) => ({ default: m.Vence })))
+const Costos = lazy(() => import('./cliente/Costos').then((m) => ({ default: m.Costos })))
 const Cuenta = lazy(() => import('./cliente/Cuenta').then((m) => ({ default: m.Cuenta })))
 const Piloto = lazy(() => import('./cliente/Piloto').then((m) => ({ default: m.Piloto })))
 const Cargando = () => <p className="cargando">Cargando…</p>
@@ -29,6 +31,8 @@ const ICONOS = {
   orden: 'M14 7l3-3 3 3-3 3M14 7L4 17l3 3 10-10',
   cuenta: 'M3 7h18v10H3zM12 15a3 3 0 100-6 3 3 0 000 6z',
   doc: 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7',
+  vence: 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4M12 14v3l2 1',
+  costos: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
 }
 const Icono = ({ d }: { d: string }) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 
@@ -69,6 +73,8 @@ function MarcoCliente() {
   const nav = [
     { a: '/mi', t: 'Mi flota', d: ICONOS.flota, fin: true },
     { a: '/mi/ordenes', t: 'Órdenes', d: ICONOS.orden },
+    { a: '/mi/vence', t: 'Vence', d: ICONOS.vence },
+    { a: '/mi/costos', t: 'Costos', d: ICONOS.costos },
     { a: '/mi/cuenta', t: 'Cuenta', d: ICONOS.cuenta },
   ]
   return (
@@ -114,6 +120,8 @@ export function App() {
         <Route path="unidad/:id" element={<UnidadCliente />} />
         <Route path="ordenes" element={<OrdenesCliente />} />
         <Route path="orden/:id" element={<OrdenCliente />} />
+        <Route path="vence" element={<Vence />} />
+        <Route path="costos" element={<Costos />} />
         <Route path="cuenta" element={<Cuenta />} />
       </Route>
       <Route path="/piloto" element={negocio?.como === 'piloto' ? <div className="app-cliente" style={{ paddingBottom: 16 }}><header className="arriba"><div><strong>{negocio.nombre}</strong><span className="suave chico">Tu unidad · D-TEK Flotas</span></div></header><main><Suspense fallback={<Cargando />}><Piloto /></Suspense></main></div> : <Navigate to={inicio} replace />} />

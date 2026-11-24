@@ -1,7 +1,9 @@
 // Calendario del mes: servicios, documentos que vencen y fallas. Mover un evento pide confirmación antes de avisar (D14).
+// Agendar una visita al patio con varias unidades (un evento por unidad) y abrir sus órdenes el día que llega el mecánico.
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useSesion } from '@nucleo/acceso/Sesion'
-import { Fecha, textoFecha, useAvisoDeshacer } from '@nucleo/controles'
+import { BotonesSel, Fecha, textoFecha, useAvisoDeshacer } from '@nucleo/controles'
 import { useAccion, useCarga } from '@nucleo/datos/useCarga'
 import { hoyGT, hora } from '@nucleo/formato'
 import { Flota, type Evento } from '../datos'
@@ -19,6 +21,7 @@ export function Calendario() {
   const hasta = new Date(mes.a, mes.m + 1, 0).toISOString().slice(0, 10)
   const { datos, error, recargar } = useCarga(() => Flota.eventos(neg, desde, hasta), [neg, desde])
   const [sel, setSel] = useState(hoy)
+  const [agendando, setAgendando] = useState(false)
   const porDia = useMemo(() => { const m = new Map<string, Evento[]>(); for (const e of datos || []) { const d = diaGT(e.programada_para); m.set(d, [...(m.get(d) || []), e]) } return m }, [datos])
   const vacias = (new Date(mes.a, mes.m, 1).getDay() + 6) % 7
   const dias = new Date(mes.a, mes.m + 1, 0).getDate()
@@ -30,8 +33,10 @@ export function Calendario() {
           <h1>{MESES[mes.m]} {mes.a}</h1>
           <button className="btn btn-sec btn-chico" aria-label="Mes siguiente" onClick={() => setMes(({ a, m }) => (m === 11 ? { a: a + 1, m: 0 } : { a, m: m + 1 }))}>›</button>
         </div>
+        {puede('mover_calendario') && <button className="btn" onClick={() => setAgendando((v) => !v)}>{agendando ? 'Cerrar' : 'Agendar visita'}</button>}
       </div>
       <Error texto={error} />
+      {agendando && <AgendarVisita negocio={neg} dia={sel >= hoy ? sel : hoy} alAgendar={(d) => { setAgendando(false); setSel(d); recargar() }} />}
       <div className="grilla-2">
         <section className="tarjeta">
           <div className="cal-grilla" style={{ gap: 4 }}>
@@ -57,7 +62,61 @@ export function Calendario() {
   )
 }
 
+const FRANJAS = [{ valor: '07', texto: '7–9' }, { valor: '09', texto: '9–11' }, { valor: '11', texto: '11–13' }, { valor: '14', texto: '14–16' }]
+
+function AgendarVisita({ negocio, dia, alAgendar }: { negocio: string; dia: string; alAgendar: (dia: string) => void }) {
+  const flotas = useCarga(() => Flota.flotas(negocio), [negocio])
+  const [flota, setFlota] = useState<string | null>(null)
+  const actual = flota || flotas.datos?.[0]?.id || null
+  const unidades = useCarga(() => (actual ? Flota.unidades(actual) : Promise.resolve([])), [actual])
+  const [elegidas, setElegidas] = useState<string[]>([])
+  const [fecha, setFecha] = useState<string | null>(dia)
+  const [franja, setFranja] = useState<string | null>('07')
+  const [motivo, setMotivo] = useState('Servicio en el patio')
+  const acc = useAccion()
+  const lista = unidades.datos || []
+  const atencion = lista.filter((u) => u.estado !== 'taller' && (u.ahora > 0 || u.cerca > 0))
+  const cambiar = (id: string) => setElegidas((x) => (x.includes(id) ? x.filter((y) => y !== id) : [...x, id]))
+  return (
+    <section className="tarjeta" style={{ marginBottom: 16 }}>
+      <h2>Visita al patio</h2>
+      <span className="suave chico">Una visita con varias unidades: cada una queda en el calendario y el día de la visita se abre como orden.</span>
+      {(flotas.datos?.length ?? 0) > 1 && <BotonesSel rotulo="Flota" valor={actual} alCambiar={(v) => { setFlota(v); setElegidas([]) }} opciones={(flotas.datos || []).map((f) => ({ valor: f.id, texto: f.nombre }))} />}
+      <div className="campo">
+        <div className="fila-entre envolver"><span className="rotulo">Unidades ({elegidas.length})</span>
+          {atencion.length > 0 && <button type="button" className="btn-texto" onClick={() => setElegidas(atencion.map((u) => u.id))}>Elegir las {atencion.length} que piden atención</button>}</div>
+        <div className="filtros">
+          {lista.map((u) => <button key={u.id} type="button" className="filtro" aria-pressed={elegidas.includes(u.id)} onClick={() => cambiar(u.id)}>{u.placa}{u.ahora > 0 || u.cerca > 0 ? ' •' : ''}</button>)}
+        </div>
+      </div>
+      <div className="grilla-campos">
+        <Fecha rotulo="Día" valor={fecha} alCambiar={setFecha} min={hoyGT()} />
+        <BotonesSel rotulo="Franja" valor={franja} alCambiar={setFranja} opciones={FRANJAS} />
+      </div>
+      <div className="campo"><label htmlFor="vmotivo">Qué se va a hacer (lo lee la empresa)</label><input id="vmotivo" className="entrada" value={motivo} onChange={(e) => setMotivo(e.target.value)} /></div>
+      <Error texto={acc.error || unidades.error} />
+      <div><button className="btn" disabled={acc.ocupado} onClick={() => acc.correr(async () => {
+        if (!actual || !elegidas.length) throw new globalThis.Error('Elegí al menos una unidad.')
+        if (!fecha || !franja) throw new globalThis.Error('Elegí el día y la franja.')
+        await Flota.agendarVisita(actual, elegidas, `${fecha}T${franja}:00:00-06:00`, motivo)
+        alAgendar(fecha)
+      })}>Agendar {elegidas.length || ''} {elegidas.length === 1 ? 'unidad' : 'unidades'}</button></div>
+    </section>
+  )
+}
+
+const ABRE_ORDEN = ['servicio', 'falla', 'solicitud']
+
 function DiaDetalle({ dia, eventos, puedeMover, alMover }: { dia: string; eventos: Evento[]; puedeMover: boolean; alMover: () => void }) {
+  const { puede } = useSesion()
+  const nav = useNavigate()
+  const accOrden = useAccion()
+  const abribles = puede('ver_ordenes') ? eventos.filter((e) => e.objeto === 'unidad' && e.estado === 'programado' && ABRE_ORDEN.includes(e.tipo)) : []
+  const abrir = (lista: Evento[]) => accOrden.correr(async () => {
+    let ultima: string | null = null
+    for (const e of lista) ultima = await Flota.atenderAviso(e.id, true)
+    if (lista.length === 1 && ultima) nav(`/panel/ordenes/${ultima}`); else nav('/panel/ordenes')
+  })
   const [moviendo, setMoviendo] = useState<Evento | null>(null)
   const [nueva, setNueva] = useState<string | null>(null)
   const acc = useAccion()
@@ -77,12 +136,17 @@ function DiaDetalle({ dia, eventos, puedeMover, alMover }: { dia: string; evento
         <div className="lista-filas">
           {eventos.map((e) => (
             <div key={e.id} className="fila-dato">
-              <div><div className="titulo">{e.titulo}</div><div className="sub">{hora(e.programada_para)} · {e.tipo}</div></div>
-              {puedeMover && <button className="btn-texto" onClick={() => { setMoviendo(e); setNueva(null) }}>Mover</button>}
+              <div><div className="titulo">{e.titulo}</div><div className="sub">{hora(e.programada_para)} · {e.tipo}{e.estado === 'hecho' ? ' · orden abierta' : ''}</div></div>
+              <div className="fila envolver" style={{ justifyContent: 'flex-end' }}>
+                {abribles.includes(e) && <button className="btn btn-chico" disabled={accOrden.ocupado} onClick={() => abrir([e])}>Abrir orden</button>}
+                {puedeMover && e.estado === 'programado' && <button className="btn-texto" onClick={() => { setMoviendo(e); setNueva(null) }}>Mover</button>}
+              </div>
             </div>
           ))}
         </div>
       )}
+      {abribles.length > 1 && <button className="btn btn-sec" disabled={accOrden.ocupado} onClick={() => abrir(abribles)}>Abrir las {abribles.length} órdenes de este día</button>}
+      <Error texto={accOrden.error} />
       {moviendo && (
         <div className="columna" style={{ borderTop: '1px solid var(--linea)', paddingTop: 12 }}>
           <strong>Mover «{moviendo.titulo}»</strong>

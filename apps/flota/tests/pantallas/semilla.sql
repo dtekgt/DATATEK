@@ -1,7 +1,7 @@
 -- Datos de las maquetas (Taller D-TEK Flotas, Distribuidora Ejemplo) para recorrer las pantallas. Solo arnés local.
 do $$
 declare
-  plat uuid; dueno uuid; tec uuid; gerente uuid; piloto uuid;
+  plat uuid; dueno uuid; tec uuid; gerente uuid; piloto uuid; mario uuid;
   neg uuid; cli uuid; cli2 uuid; fl uuid; fl2 uuid;
   u1 uuid; u2 uuid; u3 uuid; u4 uuid; u5 uuid; u6 uuid; u7 uuid;
   o1 uuid; o2 uuid; o3 uuid; l uuid;
@@ -12,6 +12,7 @@ begin
   tec := prueba.crear_usuario('+50255550003', true, 'Juan Pérez');
   gerente := prueba.crear_usuario('+50255550099', true, 'Gerente Distribuidora');
   piloto := prueba.crear_usuario('+50255550011', true, 'Luis Ramírez');
+  mario := prueba.crear_usuario('+50255550012', true, 'Mario López');
   insert into public.plataforma_admins values (plat);
   perform prueba.como(plat);
   neg := public.dt_crear_negocio('Taller D-TEK Flotas', 'flota', '55550002');
@@ -80,8 +81,14 @@ begin
 
   perform public.dt_evento_crear(neg, 'servicio', 'P-456DEF servicio de 180,000 km', 'unidad', u6, cli, ((hoy + 2)::timestamp + time '07:00') at time zone 'America/Guatemala');
   perform public.dt_evento_crear(neg, 'servicio', 'P-123ABC frenos (sugerido)', 'unidad', u1, cli, ((hoy + 6)::timestamp + time '07:00') at time zone 'America/Guatemala');
+  -- Inspección de ayer del piloto de P-123ABC y una falla de Mario que el taller no ha atendido (Flota 107 y 108).
+  perform prueba.como(piloto);
+  perform public.dt_flota_inspeccion(u1, '{"luces":true,"llantas":true,"frenos":true,"aceite":true,"tablero":true}', null, null);
+  perform prueba.como(mario);
+  perform public.dt_flota_reportar_falla(u2, 'Ruido en la suspensión trasera');
   perform prueba.como(null);
 end $$;
+update public.flota_inspecciones set en = now() - interval '1 day';
 
 -- Fechas como en la vida real (para la disponibilidad del panel): las unidades llevan meses; la 2301 estuvo 3 días en el
 -- taller, la 2302 lleva 2 y la 2303 entró hoy en la mañana.
