@@ -5,7 +5,7 @@ Actualizado: 23 nov 2026. Plan: `docs/antes-de-construir/6-plan-de-construccion.
 **Supabase compartido (`xlhaktvymmbnpotkmdct`), corrido el 23 y 24 nov 2026 con todas las verificaciones en true:** núcleo 01–09,
 Flota 100–106, Huella 200–207, Fuego 300–309, Colonia 400–407 y Obra 500–507 (lista exacta en `database/corridas-en-supabase.txt`). Lo corrido
 NO se cambia en su lugar: todo cambio va en un archivo nuevo (núcleo 10+, Flota 107+, Huella 209+, Fuego 311+, Colonia 408+,
-Obra 508+). **Pendiente de correr: Huella 208 (foto en la placa perdida) y Fuego 310 (locales de una importación).** `npm run supabase:pendientes` arma un solo archivo con lo que falte y su verificación.
+Obra 508+). **Pendiente de correr: Flota 107 (ficha e inspección) y 108 (portal de la empresa y «Hoy»), Huella 208 (foto en la placa perdida) y Fuego 310 (locales de una importación).** `npm run supabase:pendientes` arma un solo archivo con lo que falte y su verificación.
 
 ## Etapa 0 · Núcleo
 
@@ -34,6 +34,21 @@ Obra 508+). **Pendiente de correr: Huella 208 (foto en la placa perdida) y Fuego
 | F-07 Panel | Hecho | `104_flota_panel.sql`, `panel/Inicio.tsx` |
 | F-SEG | Hecho | `apps/flota/tests/sql/190_ataques.sql` (comunes y 23–26) + ataques en cada paquete; `ataque.mjs --estricto` en 0 |
 | Solo lectura en Flota | Hecho | `106_flota_solo_lectura.sql` |
+| Ficha de la unidad (24 nov) | Hecho, **107 sin correr** | `107_flota_ficha_inspeccion.sql` (`dt_flota_ficha`, `dt_flota_piloto_editar`, `dt_flota_unidad_baja`), `panel/Unidad.tsx`: salud, pilotos (agregar, reasignar, baja), documentos, km, inspecciones, historial, anotar revisión, abrir orden, dar de baja |
+| Inspección de salida del piloto (N-03) | Hecho, **107 sin correr** | `107` (`flota_inspecciones`, `dt_flota_inspeccion`, `dt_flota_piloto_resumen`), `cliente/Piloto.tsx`: cinco puntos y km; lo que está mal queda como falla; ve lo próximo y sus vencimientos |
+| Portal de la empresa: Vence, Pilotos, Costos, pedir servicio | Hecho, **108 sin correr** | `108_flota_empresa_y_hoy.sql` (`dt_flota_vencimientos`, `dt_flota_pilotos`, `dt_flota_disponibilidad` abierta a la empresa con la misma firma, `dt_flota_solicitar_servicio`), `cliente/Vence.tsx`, `cliente/Costos.tsx`, `cliente/Unidad.tsx` (lee la ficha; documentos, historial y «Pedir …») |
+| «Hoy»: fallas y pedidos sin atender | Hecho, **108 sin correr** | `108` (`dt_flota_avisos`, `dt_flota_atender_aviso`), `panel/Avisos.tsx` en Inicio y, para el técnico, en Órdenes |
+| Visita al patio por lote | Hecho, **108 sin correr** | `108` (`dt_flota_agendar_visita`), `panel/Calendario.tsx`: elegir unidades, día y franja; el día de la visita abre todas las órdenes |
+| Orden: técnico, entrega, prioridad y recordar | Hecho, **108 sin correr** | `108` (`dt_flota_tecnicos`, `dt_flota_orden_datos`, `dt_flota_recordar_cotizacion`, respeta las 4 horas), `panel/Orden.tsx` |
+
+Después de 107 y 108: Flota 293 comprobaciones (también con todos los productos juntos), 54 ataques (27 y 28 nuevos, 0 funcionan),
+18 verificaciones en true, recorrido de pantallas en verde (ficha, inspección, Vence, Costos, visita al patio, avisos) a 1440, 1024,
+390 y 375 px.
+
+Sin hacer en Flota (dependen de terceros o de decisiones): WhatsApp al agendar la visita (falta plantilla aprobada por Meta),
+foto del tablero y de los hallazgos (bucket privado de fotos), hallazgos con evidencia (`orden_hallazgos`), catálogo de repuestos
+con precio, usuarios que la empresa invita sola, informe mensual en PDF, página pública D-TEK Flotas, etiqueta QR de la unidad
+para imprimir, ver y reactivar unidades de baja desde la lista (hoy solo desde su ficha).
 
 Pruebas al cierre de Flota: núcleo 102 comprobaciones, Flota 194, 37 ataques (0 funcionan), 13 verificaciones en true,
 25 combinaciones de capacidades iguales, funciones en verde, motor del importador 5/5, recorrido de pantallas en verde a
