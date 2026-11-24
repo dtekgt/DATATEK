@@ -2,17 +2,17 @@
 // botón), lo que vence en 30 días y la disponibilidad del mes por unidad: días trabajando y cuánto costó.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Avisos } from './Avisos'
 import { useSesion } from '@nucleo/acceso/Sesion'
 import { BotonesSel, Chip, useAvisoDeshacer } from '@nucleo/controles'
 import { useAccion, useCarga } from '@nucleo/datos/useCarga'
 import { dinero, fechaCorta, hoyGT } from '@nucleo/formato'
 import { Flota } from '../datos'
 import { Nucleo, type Necesidad } from '@nucleo/datos/nucleo'
-import { DOC, Error } from '../comun'
+import { DOC, Error, diasHasta } from '../comun'
 
 const mesDe = (corrimiento: number) => { const [a, m] = hoyGT().split('-').map(Number); const d = new Date(Date.UTC(a, m - 1 + corrimiento, 1)); return d.toISOString().slice(0, 10) }
 const nombreMes = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('es-GT', { month: 'long' })
-const diasHasta = (iso: string) => Math.round((Date.parse(iso + 'T12:00:00') - Date.parse(hoyGT() + 'T12:00:00')) / 86400000)
 const enTaller = (t: number, d: number) => (!t ? '' : t < 1 ? `${Math.max(1, Math.round(t * 24))} h de ${Math.round(d)} días` : `${Math.round(t)} de ${Math.round(d)} días`)
 const tonoDisp = (p: number) => (p >= 95 ? 'bien' : p >= 85 ? 'aviso' : 'mal') as 'bien' | 'aviso' | 'mal'
 
@@ -79,6 +79,8 @@ export function Inicio() {
             : <Cifra rotulo="Disponibilidad del mes" valor={promedio === null ? '—' : `${promedio} %`} sub="promedio de la flota" />}
         </div>
       )}
+
+      <Avisos />
 
       {(necesidades.datos?.length ?? 0) > 0 && (
         <section className="tarjeta" style={{ marginBottom: 16 }}>

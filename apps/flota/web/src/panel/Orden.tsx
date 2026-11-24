@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useSesion } from '@nucleo/acceso/Sesion'
-import { Ayuda, BotonesSel, Chip, Contador, Pasos } from '@nucleo/controles'
+import { Ayuda, BotonesSel, Chip, Contador, Fecha, Pasos, useAvisoDeshacer } from '@nucleo/controles'
 import { useAccion, useCarga } from '@nucleo/datos/useCarga'
-import { dinero, fechaLarga, hora, km as fmtKm } from '@nucleo/formato'
+import { dinero, fechaLarga, hoyGT, hora, km as fmtKm } from '@nucleo/formato'
 import { COMPONENTES, ESTADOS, Flota, TIPOS, pasosDe, type EstadoOrden, type Orden, type TipoLinea } from '../datos'
 import { Error } from '../comun'
 
@@ -103,6 +103,7 @@ function Detalle({ o, recargar }: { o: Orden; recargar: () => void }) {
             )}
             <div className="fila-entre envolver">
               <span className="suave">Aprobado {dinero(o.total_aprobado)}{pendientes.length > 0 && ` · ${pendientes.length} esperando a la empresa`}</span>
+              {puede('cotizar') && o.estado === 'espera_cliente' && pendientes.length > 0 && borradores.length === 0 && <Recordar orden={o.id} />}
               {puede('cotizar') && borradores.length > 0 && <button className="btn" disabled={acc.ocupado} onClick={() => accion(() => Flota.enviarCotizacion(o.id))}>Enviar {borradores.length} línea{borradores.length > 1 ? 's' : ''} a la empresa</button>}
             </div>
             {puede('cotizar') && ['recibida', 'diagnostico', 'espera_cliente'].includes(o.estado) && <NuevaLinea orden={o.id} accion={accion} />}
@@ -117,6 +118,7 @@ function Detalle({ o, recargar }: { o: Orden; recargar: () => void }) {
         </div>
 
         <div className="columna" style={{ gap: 20 }}>
+          <DatosOrden o={o} accion={accion} />
           <Recepcion o={o} accion={accion} />
           <div className="preview">
             <span className="etiqueta" style={{ color: 'var(--acento-oscuro)' }}>Así lo ve la empresa</span>
@@ -134,9 +136,62 @@ function Detalle({ o, recargar }: { o: Orden; recargar: () => void }) {
   )
 }
 
+// Técnico, entrega prometida y prioridad (se pueden cambiar mientras la orden está abierta).
+function DatosOrden({ o, accion }: { o: Orden; accion: (fn: () => Promise<unknown>) => void }) {
+  const { negocio, puede } = useSesion()
+  const tecnicos = useCarga(() => Flota.tecnicos(negocio!.negocio_id), [negocio!.negocio_id])
+  const [editando, setEditando] = useState(false)
+  const actualTec = tecnicos.datos?.find((t) => t.nombre === o.tecnico)?.persona_id ?? null
+  const [tec, setTec] = useState<string | null>(null)
+  const [entrega, setEntrega] = useState<string | null>(null)
+  const [prioridad, setPrioridad] = useState<'normal' | 'urgente'>(o.prioridad)
+  const abierta = !['entregada', 'cancelada'].includes(o.estado)
+  const diaEntrega = o.entrega_prometida ? new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Guatemala' }).format(new Date(o.entrega_prometida)) : null
+  const abrir = () => { setTec(actualTec); setEntrega(diaEntrega); setPrioridad(o.prioridad); setEditando(true) }
+  return (
+    <section className="tarjeta">
+      <div className="fila-entre"><h2>Datos de la orden</h2>{abierta && puede('ver_ordenes') && !editando && <button className="btn-texto" onClick={abrir}>Cambiar</button>}</div>
+      {!editando ? (
+        <div className="grilla-campos" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <div><div className="suave chico">Técnico</div><b>{o.tecnico || 'Sin asignar'}</b></div>
+          <div><div className="suave chico">Entrega prometida</div><b>{o.entrega_prometida ? `${fechaLarga(o.entrega_prometida)} ${hora(o.entrega_prometida)}` : 'Sin fecha'}</b></div>
+          <div><div className="suave chico">Prioridad</div><b>{o.prioridad === 'urgente' ? 'Urgente' : 'Normal'}</b></div>
+        </div>
+      ) : (
+        <div className="columna">
+          <BotonesSel rotulo="Técnico" valor={tec} alCambiar={setTec} opciones={(tecnicos.datos || []).map((t) => ({ valor: t.persona_id, texto: t.nombre }))} />
+          <Fecha rotulo="Entrega prometida (5 de la tarde)" valor={entrega} alCambiar={setEntrega} min={hoyGT()} />
+          <BotonesSel rotulo="Prioridad" valor={prioridad} alCambiar={setPrioridad} opciones={[{ valor: 'normal', texto: 'Normal' }, { valor: 'urgente', texto: 'Urgente', sub: 'unidad parada' }]} />
+          <div className="fila envolver">
+            <button className="btn btn-chico" onClick={() => { setEditando(false); accion(() => Flota.ordenDatos(o.id, tec, entrega ? (entrega === diaEntrega ? o.entrega_prometida : `${entrega}T17:00:00-06:00`) : null, prioridad)) }}>Guardar</button>
+            <button className="btn-texto" onClick={() => setEditando(false)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+    </section>
+  )
+}
+
+// Volver a mandar el WhatsApp de la cotización a la empresa (la base no lo repite antes de 4 horas).
+function Recordar({ orden }: { orden: string }) {
+  const acc = useAccion()
+  const aviso = useAvisoDeshacer()
+  return (
+    <>
+      <button className="btn btn-sec" disabled={acc.ocupado} onClick={() => acc.correr(async () => {
+        const r = await Flota.recordarCotizacion(orden)
+        aviso.mostrar(r.enviado ? 'Le recordamos a la empresa por WhatsApp.' : r.motivo === 'repetido_en_4_horas' ? 'Ya se le avisó en las últimas 4 horas.' : 'No se pudo mandar el recordatorio (tope de mensajes del mes).')
+      })}>Recordar a la empresa</button>
+      <Error texto={acc.error} />
+      {aviso.nodo}
+    </>
+  )
+}
+
 const NOMBRE_ACCION: Record<string, string> = {
   recibida: 'Unidad recibida', recepcion_firmada: 'Recepción firmada', diagnostico: 'Diagnóstico', cotizacion_enviada: 'Cotización enviada a la empresa',
   en_trabajo: 'En trabajo', control_calidad: 'Control de calidad', lista: 'Lista y cobro creado', entregada: 'Entregada', cancelada: 'Cancelada',
+  datos_cambiados: 'Técnico, entrega o prioridad cambiados', cotizacion_recordada: 'Se le recordó a la empresa',
 }
 
 function Recepcion({ o, accion }: { o: Orden; accion: (fn: () => Promise<unknown>) => void }) {

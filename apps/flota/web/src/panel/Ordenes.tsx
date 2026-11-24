@@ -7,6 +7,7 @@ import { useAccion, useCarga } from '@nucleo/datos/useCarga'
 import { dinero, fechaCorta } from '@nucleo/formato'
 import { ESTADOS, Flota, type OrdenFila } from '../datos'
 import { Error } from '../comun'
+import { Avisos } from './Avisos'
 
 type Filtro = 'todas' | 'espera' | 'trabajo' | 'listas'
 const EN: Record<Filtro, (o: OrdenFila) => boolean> = {
@@ -30,6 +31,7 @@ export function Ordenes() {
         <div><h1>Órdenes abiertas</h1><span className="suave chico">Lo que la empresa ve en vivo sale de aquí</span></div>
         {puede('ver_ordenes') && <button className="btn" onClick={() => setNueva((v) => !v)}>{nueva ? 'Cerrar' : '+ Orden'}</button>}
       </div>
+      {!puede('ver_panel') && <Avisos />}
       {nueva && <NuevaOrden negocio={neg} alCrear={() => { setNueva(false); recargar() }} />}
       <section className="tarjeta">
         <Filtros valor={filtro} alCambiar={setFiltro} opciones={[

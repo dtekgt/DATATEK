@@ -1,5 +1,6 @@
 // Piezas de pantalla compartidas entre el panel y la herramienta del cliente de Flota.
 import type { Tono } from '@nucleo/controles'
+import { fechaCorta, hoyGT } from '@nucleo/formato'
 
 export function Anillo({ puntaje, tono, sinDatos = false }: { puntaje: number; tono: 'bien' | 'aviso' | 'mal' | 'neutro'; sinDatos?: boolean }) {
   const r = 17, L = 2 * Math.PI * r
@@ -27,5 +28,14 @@ export const TONO_PIEZA: Record<string, { texto: string; tono: Tono }> = {
 }
 
 export const DOC: Record<string, string> = { seguro: 'Seguro', tarjeta_circulacion: 'Tarjeta de circulación', licencia: 'Licencia', otro: 'Documento' }
+
+// Días hasta una fecha (día de Guatemala) y cómo decirlo: lo vencido en rojo, lo de 30 días en amarillo.
+export const diasHasta = (iso: string) => Math.round((Date.parse(iso + 'T12:00:00') - Date.parse(hoyGT() + 'T12:00:00')) / 86400000)
+export const tonoVence = (iso: string | null): Tono => (!iso ? 'neutro' : diasHasta(iso) < 0 ? 'mal' : diasHasta(iso) <= 30 ? 'aviso' : 'bien')
+export const textoVence = (iso: string | null) => {
+  if (!iso) return 'Sin fecha'
+  const d = diasHasta(iso)
+  return d < 0 ? `Venció hace ${-d} ${-d === 1 ? 'día' : 'días'}` : d === 0 ? 'Vence hoy' : d <= 60 ? `Vence en ${d} ${d === 1 ? 'día' : 'días'}` : `Vence el ${fechaCorta(iso)}`
+}
 
 export { Error } from '@nucleo/controles'

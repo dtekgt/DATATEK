@@ -1,5 +1,5 @@
 // Acceso a datos de Flota: un wrapper por función de la base (como DtekBackend en DtekPro). Ninguna pantalla llama a Supabase directo.
-import { rpc, supabase, ErrorDeBase, enEspanol } from '@nucleo/datos/supabase'
+import { rpc } from '@nucleo/datos/supabase'
 
 export type EstadoOrden = 'recibida' | 'diagnostico' | 'espera_cliente' | 'en_trabajo' | 'control_calidad' | 'lista' | 'entregada' | 'cancelada'
 export type TipoLinea = 'necesario' | 'recomendado' | 'puede_esperar'
@@ -25,8 +25,7 @@ export type Orden = {
 export type CuentaFila = { cobro_id: string; concepto: string; monto: number; pagado: number; saldo: number; vence: string | null; estado: string; creado_en: string; origen: string; agrupado_en: string | null }
 export type Corte = { id: string; hasta: string; cobro_id: string; ordenes: number; monto: number; pagado: number; saldo: number; vence: string | null; estado: string }
 export type CortePrevio = { cobro_id: string; concepto: string; saldo: number; creado_en: string }
-export type Evento = { id: string; tipo: string; titulo: string; programada_para: string; realizada_en: string | null; estado: string; cliente_id: string | null }
-export type Documento = { id: string; unidad_id: string; tipo: string; numero: string | null; vence: string }
+export type Evento = { id: string; tipo: string; titulo: string; programada_para: string; realizada_en: string | null; estado: string; cliente_id: string | null; objeto: string | null; objeto_id: string | null }
 
 export type Disponibilidad = { unidad_id: string; placa: string; descripcion: string; dias: number; dias_taller: number; disponibilidad: number; costo: number | null; ordenes: number }
 export type Vence = { tipo: 'documento' | 'licencia'; que: string; unidad_id: string | null; placa: string | null; flota: string; vence: string }
@@ -34,6 +33,29 @@ export type Panel = {
   unidades: number; en_taller: number; ordenes_abiertas: number; esperando_empresa: number; listas_para_entregar: number; sin_km_reciente: number
   cobrado_mes: number | null; facturado_mes: number | null; por_cobrar: number | null; vencidos: number | null; vence: Vence[]
 }
+
+export type Ficha = {
+  unidad: { id: string; placa: string; marca: string; linea: string; anio: number | null; vin: string | null; km: number; km_reportado_en: string | null; estado: string; flota_id: string; flota: string; baja_motivo: string | null }
+  pilotos: { id: string; nombre: string; telefono: string | null; licencia_tipo: string | null; licencia_vence: string | null; ligado: boolean }[]
+  documentos: { id: string; tipo: string; numero: string | null; vence: string }[]
+  km: { km: number; en: string; rechazado: boolean; quien: string | null }[]
+  inspecciones: { en: string; todo_bien: boolean; items: Record<string, boolean>; km: number | null; nota: string | null; quien: string | null }[]
+  ordenes: { id: string; numero: number; motivo: string; estado: EstadoOrden; creada_en: string; total: number }[]
+  taller: boolean; puedo_pedir: boolean; solicitud_abierta: string | null
+}
+export type PilotoFila = { id: string; nombre: string; telefono: string | null; unidad_id: string | null; placa: string | null; licencia_tipo: string | null; licencia_vence: string | null; ligado: boolean }
+export type Vencimiento = { tipo: 'servicio' | 'documento' | 'licencia'; que: string; unidad_id: string | null; placa: string | null; quien: string | null; vence: string | null; estimada: boolean; detalle: string | null }
+export type Aviso = { evento_id: string; tipo: 'falla' | 'solicitud'; titulo: string; unidad_id: string; placa: string; flota: string; en: string; quien: string | null }
+export type ResumenPiloto = {
+  proximo: string | null; proximo_detalle: string | null; proximo_tono: string | null; conocidas: number
+  documentos: { tipo: string; vence: string }[]; licencia_vence: string | null; inspeccion_hoy: { en: string; todo_bien: boolean } | null
+}
+export type Tecnico = { persona_id: string; nombre: string; rol: string }
+// Lo que el piloto revisa antes de salir (mismo orden que dt_flota_items_inspeccion).
+export const ITEMS_INSPECCION: { clave: string; texto: string }[] = [
+  { clave: 'luces', texto: 'Luces' }, { clave: 'llantas', texto: 'Llantas' }, { clave: 'frenos', texto: 'Frenos' },
+  { clave: 'aceite', texto: 'Aceite' }, { clave: 'tablero', texto: 'Tablero sin luces de alerta' },
+]
 
 export const Flota = {
   panel: (negocio: string) => rpc<Panel>('dt_flota_panel', { p_negocio: negocio }),
@@ -51,11 +73,31 @@ export const Flota = {
   unidades: (flota: string) => rpc<UnidadFila[]>('dt_flota_unidades', { p_flota: flota }),
   agregarUnidad: (flota: string, placa: string, marca: string, linea: string, anio: number, km: number) =>
     rpc<string>('dt_flota_agregar_unidad', { p_flota: flota, p_placa: placa, p_marca: marca, p_linea: linea, p_anio: anio, p_km: km }),
-  unidad: async (id: string) => {
-    const { data, error } = await supabase.from('unidades').select('id, placa, marca, linea, anio, km_actual, km_reportado_en, estado').eq('id', id).single()
-    if (error) throw new ErrorDeBase(enEspanol(error.message))
-    return data as { id: string; placa: string; marca: string; linea: string; anio: number | null; km_actual: number; km_reportado_en: string | null; estado: string }
-  },
+  ficha: (unidad: string) => rpc<Ficha>('dt_flota_ficha', { p_unidad: unidad }),
+  documento: (unidad: string, tipo: string, numero: string | null, vence: string) =>
+    rpc<string>('dt_flota_documento', { p_unidad: unidad, p_tipo: tipo, p_numero: numero, p_vence: vence, p_archivo: null }),
+  agregarPiloto: (flota: string, nombre: string, telefono: string | null, unidad: string | null, licenciaTipo: string | null, licenciaVence: string | null) =>
+    rpc<string>('dt_flota_agregar_piloto', { p_flota: flota, p_nombre: nombre, p_telefono: telefono, p_unidad: unidad, p_licencia_tipo: licenciaTipo, p_licencia_vence: licenciaVence }),
+  editarPiloto: (piloto: string, unidad: string | null, licenciaTipo: string | null, licenciaVence: string | null, activo: boolean) =>
+    rpc<void>('dt_flota_piloto_editar', { p_piloto: piloto, p_unidad: unidad, p_licencia_tipo: licenciaTipo, p_licencia_vence: licenciaVence, p_activo: activo }),
+  pilotos: (flota: string) => rpc<PilotoFila[]>('dt_flota_pilotos', { p_flota: flota }),
+  unidadBaja: (unidad: string, baja: boolean, motivo: string | null) => rpc<void>('dt_flota_unidad_baja', { p_unidad: unidad, p_baja: baja, p_motivo: motivo }),
+  anotarPieza: (unidad: string, componente: string, fecha: string, km: number | null, resultado: string) =>
+    rpc<string>('dt_flota_anotar_pieza', { p_unidad: unidad, p_componente: componente, p_fecha: fecha, p_km: km, p_resultado: resultado }),
+  inspeccion: (unidad: string, items: Record<string, boolean>, km: number | null, nota: string | null) =>
+    rpc<{ todo_bien: boolean; km: string | null; falla: string | null }>('dt_flota_inspeccion', { p_unidad: unidad, p_items: items, p_km: km, p_nota: nota }),
+  resumenPiloto: (unidad: string) => rpc<ResumenPiloto>('dt_flota_piloto_resumen', { p_unidad: unidad }),
+  vencimientos: (flota: string, dias = 60) => rpc<Vencimiento[]>('dt_flota_vencimientos', { p_flota: flota, p_dias: dias }),
+  solicitarServicio: (unidad: string, que: string) => rpc<string>('dt_flota_solicitar_servicio', { p_unidad: unidad, p_que: que }),
+  misSolicitudes: (flota: string) => rpc<{ evento_id: string; unidad_id: string; titulo: string; en: string }[]>('dt_flota_mis_solicitudes', { p_flota: flota }),
+  avisos: (negocio: string) => rpc<Aviso[]>('dt_flota_avisos', { p_negocio: negocio }),
+  atenderAviso: (evento: string, abrir: boolean) => rpc<string | null>('dt_flota_atender_aviso', { p_evento: evento, p_abrir: abrir, p_motivo: null }),
+  agendarVisita: (flota: string, unidades: string[], cuando: string, motivo: string) =>
+    rpc<number>('dt_flota_agendar_visita', { p_flota: flota, p_unidades: unidades, p_cuando: cuando, p_motivo: motivo }),
+  tecnicos: (negocio: string) => rpc<Tecnico[]>('dt_flota_tecnicos', { p_negocio: negocio }),
+  ordenDatos: (orden: string, tecnico: string | null, entrega: string | null, prioridad: 'normal' | 'urgente') =>
+    rpc<void>('dt_flota_orden_datos', { p_orden: orden, p_tecnico: tecnico, p_entrega: entrega, p_prioridad: prioridad }),
+  recordarCotizacion: (orden: string) => rpc<{ enviado: boolean; motivo: string | null }>('dt_flota_recordar_cotizacion', { p_orden: orden }),
   salud: async (unidad: string) => (await rpc<Salud[]>('dt_flota_salud', { p_unidad: unidad }))[0],
   piezas: (unidad: string) => rpc<Pieza[]>('dt_flota_piezas', { p_unidad: unidad }),
   reportarKm: (unidad: string, km: number) => rpc<string>('dt_flota_reportar_km', { p_unidad: unidad, p_km: km }),
@@ -81,12 +123,6 @@ export const Flota = {
   cortes: (flota: string) => rpc<Corte[]>('dt_flota_cortes', { p_flota: flota }),
   eventos: (negocio: string, desde: string, hasta: string) => rpc<Evento[]>('dt_eventos', { p_negocio: negocio, p_desde: desde, p_hasta: hasta }),
   moverEvento: (evento: string, cuando: string, avisar: boolean) => rpc<string | null>('dt_evento_mover', { p_evento: evento, p_cuando: cuando, p_avisar: avisar }),
-  documentos: async (unidades: string[]) => {
-    if (!unidades.length) return [] as Documento[]
-    const { data, error } = await supabase.from('documentos_unidad').select('id, unidad_id, tipo, numero, vence').in('unidad_id', unidades).order('vence')
-    if (error) throw new ErrorDeBase(enEspanol(error.message))
-    return (data || []) as Documento[]
-  },
 }
 
 export const ESTADOS: Record<EstadoOrden, { texto: string; cliente: string; tono: 'bien' | 'aviso' | 'mal' | 'neutro' }> = {

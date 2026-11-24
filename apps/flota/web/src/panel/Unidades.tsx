@@ -1,5 +1,6 @@
 // Unidades de una flota con su salud, km y lo próximo. Filtros arriba y alta de unidad (año y km con − y +).
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useSesion } from '@nucleo/acceso/Sesion'
 import { Ayuda, BotonesSel, Chip, Contador, Filtros } from '@nucleo/controles'
 import { useAccion, useCarga } from '@nucleo/datos/useCarga'
@@ -48,7 +49,7 @@ export function Unidades() {
               <tbody>
                 {lista.map((u) => (
                   <tr key={u.id}>
-                    <td><b>{u.placa}</b><div className="suave chico">{u.marca} {u.linea} {u.anio ?? ''}{u.piloto ? ` · ${u.piloto}` : ''}</div></td>
+                    <td><Link to={`/panel/unidades/${u.id}`}><b>{u.placa}</b></Link><div className="suave chico">{u.marca} {u.linea} {u.anio ?? ''}{u.piloto ? ` · ${u.piloto}` : ''}</div></td>
                     <td style={{ minWidth: 130 }}>{u.conocidas === 0 ? <span className="suave">Sin datos</span> : <div className="fila"><div className="barra-pista" style={{ flex: 1 }}><div style={{ width: `${u.puntaje}%`, background: saludTono(u) === 'mal' ? 'var(--mal)' : saludTono(u) === 'aviso' ? 'var(--aviso)' : 'var(--acento)' }} /></div><b>{u.puntaje}</b></div>}</td>
                     <td>{fmtKm(u.km_actual)}<div className="suave chico">{haceCuanto(u.km_reportado_en)}</div></td>
                     <td>{proximoTexto(u)}</td>

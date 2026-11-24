@@ -73,7 +73,10 @@ begin
     'ordenes', coalesce((select jsonb_agg(jsonb_build_object('id', o.id, 'numero', o.numero, 'motivo', o.motivo, 'estado', o.estado, 'creada_en', o.creada_en,
         'total', public.dt_flota_total_aprobado(o.id)) order by o.creada_en desc)
       from public.ordenes o where o.unidad_id = u.id), '[]'::jsonb),
-    'taller', v_taller
+    'taller', v_taller,
+    -- Pedir servicio y ver montos: titular o aprobador de la empresa (la pantalla no pregunta por rol).
+    'puedo_pedir', f.cliente_id in (select public.dt_mis_clientes_titulares()),
+    'solicitud_abierta', (select e.titulo from public.eventos e where e.objeto = 'unidad' and e.objeto_id = u.id and e.tipo = 'solicitud' and e.estado = 'programado' limit 1)
   ) into v
   from public.unidades u join public.flotas f on f.id = u.flota_id where u.id = p_unidad;
   return v;

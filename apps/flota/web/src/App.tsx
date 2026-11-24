@@ -10,6 +10,7 @@ const Inicio = lazy(() => import('./panel/Inicio').then((m) => ({ default: m.Ini
 const Flotas = lazy(() => import('./panel/Flotas').then((m) => ({ default: m.Flotas })))
 const Ordenes = lazy(() => import('./panel/Ordenes').then((m) => ({ default: m.Ordenes })))
 const OrdenPanel = lazy(() => import('./panel/Orden').then((m) => ({ default: m.OrdenPanel })))
+const UnidadPanel = lazy(() => import('./panel/Unidad').then((m) => ({ default: m.UnidadPanel })))
 const Unidades = lazy(() => import('./panel/Unidades').then((m) => ({ default: m.Unidades })))
 const Calendario = lazy(() => import('./panel/Calendario').then((m) => ({ default: m.Calendario })))
 const Mas = lazy(() => import('./panel/Mas').then((m) => ({ default: m.Mas })))
@@ -103,6 +104,7 @@ export function App() {
         <Route path="ordenes" element={<Ordenes />} />
         <Route path="ordenes/:id" element={<OrdenPanel />} />
         <Route path="unidades" element={<Unidades />} />
+        <Route path="unidades/:id" element={<UnidadPanel />} />
         <Route path="calendario" element={<Calendario />} />
         <Route path="mas" element={<Mas />} />
         <Route index element={<Navigate to={inicioPanel} replace />} />
